@@ -69,6 +69,12 @@
       @apply opacity-75;
     }
 
+    .katex-display {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-block: 0.25rem;
+    }
+
     table {
       th,
       td {
