@@ -10,6 +10,7 @@ import Socials from "@/components/Socials.astro";
 import Card from "@/components/Card.astro";
 import LinkButton from "@/components/LinkButton.astro";
 import { getSortedPosts } from "@/utils/getSortedPosts";
+import { getAssetPath } from "@/utils/withBase";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
 
@@ -44,7 +45,8 @@ const homePath = getRelativeLocaleUrl(locale, "");
           个人博客
         </span>
         <a
-          href={getRelativeLocaleUrl(locale, "rss.xml")}
+          href={getAssetPath("rss.xml")}
+          data-astro-reload
           class="flex items-center gap-2 underline-offset-4 hover:underline"
           aria-label={t.home.rssFeed}
           title={t.home.rssFeed}
