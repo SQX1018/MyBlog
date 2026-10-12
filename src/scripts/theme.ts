@@ -1,19 +1,26 @@
 const THEME_KEY = "theme";
 const LIGHT = "light";
 const DARK = "dark";
+type Theme = typeof LIGHT | typeof DARK;
 
-function getPreferredTheme(): string {
+function isTheme(value: unknown): value is Theme {
+  return value === LIGHT || value === DARK;
+}
+
+function getPreferredTheme(): Theme {
   const stored = localStorage.getItem(THEME_KEY);
-  if (stored) return stored;
+  if (isTheme(stored)) return stored;
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? DARK
     : LIGHT;
 }
 
 // Reuse the value already set by the inline FOUC-prevention script if available.
-let themeValue: string =
-  (window as unknown as { __theme?: { value: string } }).__theme?.value ??
-  getPreferredTheme();
+const themeWindow = window as Window & { __theme?: { value: Theme } };
+const initialTheme = themeWindow.__theme?.value;
+let themeValue: Theme = isTheme(initialTheme)
+  ? initialTheme
+  : getPreferredTheme();
 
 function persist(): void {
   localStorage.setItem(THEME_KEY, themeValue);
@@ -21,9 +28,10 @@ function persist(): void {
 }
 
 function reflect(): void {
-  const root = document.firstElementChild;
-  root?.setAttribute("data-theme", themeValue);
-  root?.classList.toggle("dark", themeValue === DARK);
+  const root = document.documentElement;
+  root.setAttribute("data-theme", themeValue);
+  root.classList.toggle("dark", themeValue === DARK);
+  themeWindow.__theme = { value: themeValue };
   const themeButton = document.querySelector<HTMLButtonElement>("#theme-btn");
   const label =
     themeValue === DARK
@@ -44,10 +52,13 @@ function reflect(): void {
 
 function setup(): void {
   reflect();
-  document.querySelector("#theme-btn")?.addEventListener("click", () => {
-    themeValue = themeValue === LIGHT ? DARK : LIGHT;
-    persist();
-  });
+  const themeButton = document.querySelector<HTMLButtonElement>("#theme-btn");
+  if (themeButton) {
+    themeButton.onclick = () => {
+      themeValue = themeValue === LIGHT ? DARK : LIGHT;
+      persist();
+    };
+  }
 }
 
 setup();
@@ -55,23 +66,27 @@ setup();
 // Re-run after View Transitions navigation.
 document.addEventListener("astro:after-swap", setup);
 
-// Carry the theme-color value across View Transitions to prevent the
-// Android navigation bar from flashing during page transitions.
+// Set the incoming theme before Astro replaces the root attributes, so
+// the new page never falls back to the light palette during navigation.
 document.addEventListener("astro:before-swap", event => {
+  const newDocument = (event as { newDocument: Document }).newDocument;
+  newDocument.documentElement.setAttribute("data-theme", themeValue);
+  newDocument.documentElement.classList.toggle("dark", themeValue === DARK);
   const color = document
     .querySelector("meta[name='theme-color']")
     ?.getAttribute("content");
   if (color) {
-    (event as { newDocument: Document }).newDocument
+    newDocument
       .querySelector("meta[name='theme-color']")
       ?.setAttribute("content", color);
   }
 });
 
-// Sync with OS-level dark/light preference changes.
+// Follow system changes only until the visitor chooses a theme explicitly.
 window
   .matchMedia("(prefers-color-scheme: dark)")
   .addEventListener("change", ({ matches }) => {
+    if (isTheme(localStorage.getItem(THEME_KEY))) return;
     themeValue = matches ? DARK : LIGHT;
-    persist();
+    reflect();
   });
