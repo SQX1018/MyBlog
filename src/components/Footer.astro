@@ -2,6 +2,7 @@
 import type { HTMLAttributes } from "astro/types";
 import Socials from "./Socials.astro";
 import { useTranslations } from "@/i18n";
+import config from "@/config";
 
 type Props = {
   noMarginTop?: boolean;
@@ -18,12 +19,14 @@ const currentYear = new Date().getFullYear();
   {...attrs}
 >
   <div
-    class="border-border flex flex-col items-center justify-between border-t py-6 sm:flex-row-reverse sm:py-4"
+    class="border-border text-muted-foreground flex flex-col items-center justify-between gap-3 border-t py-8 text-sm sm:flex-row-reverse"
   >
-    <Socials />
-    <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row">
-      <span>{t.footer.copyright} &#169; {currentYear}</span>
-      <span class="hidden sm:inline">&nbsp;|&nbsp;</span>
+    {config.socials.length > 0 && <Socials />}
+    <div
+      class="flex flex-wrap items-center justify-center gap-y-1 text-center sm:justify-start"
+    >
+      <span>&#169; {currentYear} {config.site.author}</span>
+      <span aria-hidden="true">&nbsp;·&nbsp;</span>
       <span>{t.footer.allRightsReserved}</span>
     </div>
   </div>

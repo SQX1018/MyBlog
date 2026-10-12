@@ -30,6 +30,7 @@ export interface UIStrings {
     featured: string;
     recentPosts: string;
     allPosts: string;
+    rssFeed: string;
   };
   footer: {
     copyright: string;
@@ -60,6 +61,10 @@ export interface UIStrings {
     noResults: string;
     goToPreviousPage: string;
     goToNextPage: string;
+    switchToLight: string;
+    switchToDark: string;
+    breadcrumb: string;
+    pagination: string;
   };
   notFound: {
     title: string;

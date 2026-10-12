@@ -46,6 +46,8 @@ const t = useTranslations(locale);
 </Layout>
 
 <script>
+  import zhCN from "@/i18n/lang/zh-CN";
+
   function initSearch() {
     const pageFindSearch: HTMLElement | null =
       document.querySelector("#pagefind-search");
@@ -63,12 +65,11 @@ const t = useTranslations(locale);
       // @ts-expect-error — Missing types for @pagefind/default-ui package.
       const { PagefindUI } = await import("@pagefind/default-ui");
 
-      // Display warning inn dev mode
+      // The development server uses the search index from the latest build.
       if (import.meta.env.DEV) {
         pageFindSearch.innerHTML = `
-            <div class="bg-muted/75 rounded p-4 space-y-4 mb-4">
-              <p><strong>DEV mode Warning! </strong>You need to build the project at least once to see the search results during development.</p>
-              <code class="block bg-black text-white px-2 py-1 rounded">pnpm run build</code>
+            <div class="bg-muted/75 text-muted-foreground rounded-lg p-4 text-sm mb-6">
+              <p>本地预览使用最近一次构建的搜索索引。新增或修改文章后，运行 <code>npm.cmd run build</code> 更新搜索内容。</p>
             </div>
           `;
       }
@@ -79,6 +80,18 @@ const t = useTranslations(locale);
         bundlePath,
         showImages: false,
         showSubResults: true,
+        translations: {
+          search_label: zhCN.nav.search,
+          placeholder: zhCN.a11y.searchPlaceholder,
+          clear_search: "清除",
+          load_more: "加载更多结果",
+          searching: "正在搜索…",
+          zero_results: "没有找到与「[SEARCH_TERM]」相关的内容",
+          one_result: "找到 [COUNT] 条与「[SEARCH_TERM]」相关的结果",
+          many_results: "找到 [COUNT] 条与「[SEARCH_TERM]」相关的结果",
+          filters_label: "筛选结果",
+          alt_search: "没有找到结果。请尝试其他关键词。",
+        },
         processTerm: function (term: string) {
           params.set("q", term); // Update the `q` parameter in the URL
           history.replaceState(history.state, "", "?" + params.toString()); // Push the new URL without reloading
@@ -101,10 +114,12 @@ const t = useTranslations(locale);
       const searchInput = document.querySelector(".pagefind-ui__search-input");
       const clearButton = document.querySelector(".pagefind-ui__search-clear");
       searchInput?.addEventListener("input", resetSearchParam);
-      clearButton?.addEventListener("click", resetSearchParam);
+      clearButton?.addEventListener("click", () => {
+        history.replaceState(history.state, "", window.location.pathname);
+      });
 
-      function resetSearchParam(e: Event) {
-        if ((e.target as HTMLInputElement)?.value.trim() === "") {
+      function resetSearchParam() {
+        if ((searchInput as HTMLInputElement)?.value.trim() === "") {
           history.replaceState(history.state, "", window.location.pathname);
         }
       }
@@ -124,13 +139,14 @@ const t = useTranslations(locale);
 
 <style is:global>
   #pagefind-search {
-    --pagefind-ui-font: var(--font-app);
+    --pagefind-ui-font:
+      "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
     --pagefind-ui-text: var(--foreground);
     --pagefind-ui-background: var(--background);
     --pagefind-ui-border: var(--border);
     --pagefind-ui-primary: var(--accent);
     --pagefind-ui-tag: var(--background);
-    --pagefind-ui-border-radius: 0.375rem;
+    --pagefind-ui-border-radius: 0.75rem;
     --pagefind-ui-border-width: 1px;
     --pagefind-ui-image-border-radius: 8px;
     --pagefind-ui-image-box-ratio: 3 / 2;

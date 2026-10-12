@@ -24,7 +24,15 @@ function reflect(): void {
   const root = document.firstElementChild;
   root?.setAttribute("data-theme", themeValue);
   root?.classList.toggle("dark", themeValue === DARK);
-  document.querySelector("#theme-btn")?.setAttribute("aria-label", themeValue);
+  const themeButton = document.querySelector<HTMLButtonElement>("#theme-btn");
+  const label =
+    themeValue === DARK
+      ? themeButton?.dataset.labelLight
+      : themeButton?.dataset.labelDark;
+  if (label) {
+    themeButton?.setAttribute("aria-label", label);
+    themeButton?.setAttribute("title", label);
+  }
 
   // Fill <meta name="theme-color"> with the computed background colour so
   // Android's browser chrome matches the page background.

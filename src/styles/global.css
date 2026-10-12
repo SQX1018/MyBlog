@@ -20,20 +20,46 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
+  body {
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    overflow-wrap: anywhere;
+  }
+
+  code,
+  pre {
+    font-family: var(--font-code);
+  }
 }
 
 @utility max-w-app {
-  @apply max-w-3xl;
+  max-width: 55rem;
 }
 
 @utility app-layout {
-  @apply max-w-app mx-auto w-full px-4;
+  @apply max-w-app mx-auto w-full px-5 sm:px-8;
 }
 
 @utility active-nav {
-  @apply underline decoration-wavy decoration-2 underline-offset-8;
+  @apply text-accent underline decoration-2 underline-offset-8;
 }
 
 :target {
   scroll-margin-block: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }

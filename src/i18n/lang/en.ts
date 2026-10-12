@@ -32,6 +32,7 @@ export default {
     featured: "Featured",
     recentPosts: "Recent Posts",
     allPosts: "All Posts",
+    rssFeed: "RSS Feed",
   },
   footer: {
     copyright: "Copyright",
@@ -62,6 +63,10 @@ export default {
     noResults: "No results found",
     goToPreviousPage: "Go to previous page",
     goToNextPage: "Go to next page",
+    switchToLight: "Switch to light mode",
+    switchToDark: "Switch to dark mode",
+    breadcrumb: "Breadcrumb",
+    pagination: "Pagination navigation",
   },
   notFound: {
     title: "404 Not Found",

@@ -15,8 +15,8 @@ const items = await Promise.all(
     const title =
       linkTitle ??
       (url.startsWith("mailto:") || name === "mail"
-        ? `Send an email to ${site.title}`
-        : `${site.title} on ${name.charAt(0).toUpperCase() + name.slice(1)}`);
+        ? `发送邮件给${site.author}`
+        : `访问${site.author}的 ${name.charAt(0).toUpperCase() + name.slice(1)} 主页`);
     return { url, title, Icon };
   })
 );

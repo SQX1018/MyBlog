@@ -18,9 +18,13 @@ import {
 } from "@shikijs/transformers";
 import { transformerFileName } from "./src/utils/transformers/fileName";
 import config from "./astro-paper.config";
+import { rehypeBaseUrls } from "./src/utils/rehypeBaseUrls";
+
+const base = "/MyBlog";
 
 export default defineConfig({
   site: config.site.url,
+  base,
   integrations: [
     mdx(),
     sitemap({
@@ -29,8 +33,8 @@ export default defineConfig({
     }),
   ],
   i18n: {
-    locales: ["en"],
-    defaultLocale: "en",
+    locales: ["zh-CN"],
+    defaultLocale: "zh-CN",
     routing: {
       prefixDefaultLocale: false,
     },
@@ -41,7 +45,7 @@ export default defineConfig({
         remarkToc,
         [remarkCollapse, { test: "Table of contents" }],
       ],
-      rehypePlugins: [rehypeCallouts],
+      rehypePlugins: [rehypeCallouts, [rehypeBaseUrls, { base }]],
     }),
     shikiConfig: {
       themes: { light: "min-light", dark: "night-owl" },

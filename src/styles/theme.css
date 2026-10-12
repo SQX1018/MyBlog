@@ -7,28 +7,31 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
-  --font-app: var(--font-google-sans-code);
+  --font-app:
+    "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --font-editorial: "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", serif;
+  --font-code: var(--font-google-sans-code), monospace;
 }
 
 /* Light theme values */
 :root,
 [data-theme="light"] {
-  --background: #fdfdfd;
-  --foreground: #282728;
-  --accent: #006cac;
+  --background: #f7f4ec;
+  --foreground: #303632;
+  --accent: #245846;
   --accent-foreground: #ffffff;
-  --muted: #e6e6e6;
-  --muted-foreground: #6b7280;
-  --border: #ece9e9;
+  --muted: #eae7de;
+  --muted-foreground: #657068;
+  --border: #dcded3;
 }
 
 /* Dark theme values */
 [data-theme="dark"] {
-  --background: #212737;
-  --foreground: #eaedf3;
-  --accent: #ff6b01;
-  --accent-foreground: #ffffff;
-  --muted: #343f60;
-  --muted-foreground: #afb9ca;
-  --border: #ab4b08;
+  --background: #19231f;
+  --foreground: #e8ece3;
+  --accent: #a0cdb5;
+  --accent-foreground: #19231f;
+  --muted: #28372f;
+  --muted-foreground: #a8b5ac;
+  --border: #35493d;
 }

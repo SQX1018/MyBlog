@@ -4,6 +4,16 @@
   /* ===== Override default Tailwind Typography styles ===== */
   .app-prose {
     @apply prose;
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-quotes: var(--foreground);
+    --tw-prose-lead: var(--muted-foreground);
+    --tw-prose-counters: var(--muted-foreground);
+    --tw-prose-captions: var(--muted-foreground);
+    --tw-prose-links: var(--accent);
+    max-width: none;
+    line-height: 1.95;
 
     h1,
     h2,
@@ -14,7 +24,7 @@
     }
 
     h3 {
-      @apply italic;
+      font-style: normal;
     }
 
     p,
@@ -28,7 +38,7 @@
     }
 
     a {
-      @apply text-foreground hover:text-accent wrap-break-word decoration-dashed underline-offset-4 focus-visible:no-underline;
+      @apply text-accent wrap-break-word underline-offset-4 hover:decoration-2 focus-visible:no-underline;
     }
 
     ul {
