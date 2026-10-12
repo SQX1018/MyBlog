@@ -4,9 +4,9 @@ export default defineAstroPaperConfig({
   site: {
     // GitHub Pages 域名；仓库子目录 /MyBlog 在 astro.config.ts 中配置。
     url: "https://sqx1018.github.io/",
-    title: "我的博客",
+    title: "SQX1018的博客",
     description: "【待填写：用一两句话介绍自己，以及这个博客会分享的内容。】",
-    author: "【待填写：姓名或昵称】",
+    author: "SQX1018",
     ogImage: "default-og.jpg",
     lang: "zh-CN",
     timezone: "Asia/Shanghai",

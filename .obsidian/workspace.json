@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "开始使用.md",
+                "file": "src/content/pages/about.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "开始使用"
+              "title": "about"
             }
           }
         ]
@@ -99,7 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "开始使用.md",
+                "file": "src/content/pages/about.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "开始使用.md",
+                "file": "src/content/pages/about.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "开始使用.md",
+                "file": "src/content/pages/about.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -190,29 +190,30 @@
   },
   "active": "794c73843b3d16e4",
   "lastOpenFiles": [
-    "src/content/posts/未命名.canvas",
-    "开始使用.md",
-    "src/content/posts/未命名.md",
-    "dist/pagefind/fragment/zh-cn_9458228.pf_fragment",
-    "dist/pagefind/fragment/zh-cn_e1322f5.pf_fragment",
-    "dist/pagefind/fragment/zh-cn_8dcc981.pf_fragment",
-    "dist/pagefind/pagefind.zh-cn_de82d8a9b9dfa.pf_meta",
-    "dist/sitemap-0.xml",
-    "dist/sitemap-index.xml",
-    "dist/tags/index.html",
-    "dist/tags",
-    "dist/search/index.html",
-    "dist/search",
-    "dist/_astro/favicon.9JWTW-xo.svg",
-    "dist/_astro/default-og.jWlOTf-L.jpg",
-    "dist/_astro/IconCalendar.C0xY3fv4.svg",
+    "dist/pagefind/fragment/zh-cn_6e397e3.pf_fragment",
+    "dist/pagefind/pagefind.zh-cn_3660d4fbca68a.pf_meta",
+    "dist/index.html",
+    "dist/archives/index.html",
+    "dist/archives",
+    "dist/about/index.html",
+    "dist/about",
+    "dist/404.html",
+    "dist/_astro/search.BgqdgRG8.css",
+    "dist/_astro/Footer.C9VdbQfk.css",
     "dist/_astro/IconSunHigh.EHu4P2Sl.svg",
-    "dist/_astro/IconUnderline.FgNLUM1q.svg",
-    "dist/_astro/IconArrowNarrowUp.CPgOLFWd.svg",
+    "dist/_astro/IconMoon.CRxdR147.svg",
+    "dist/_astro/IconCalendar.C0xY3fv4.svg",
     "dist/_astro/IconX.DK0Dc7zq.svg",
+    "dist/_astro/IconUnderline.FgNLUM1q.svg",
+    "dist/_astro/IconMenuDeep.CczWFiGg.svg",
+    "dist/_astro/IconArrowNarrowUp.CPgOLFWd.svg",
     "dist/_astro/IconArrowLeft.7rKuNJsZ.svg",
-    "dist/_astro/IconHash.DCXiTZko.svg",
     "dist/_astro/IconChevronLeft.De5yWaLG.svg",
+    "dist/pagefind/index/zh-cn_b5fd1ea.pf_index",
+    "dist/favicon.svg",
+    "开始使用.md",
+    "src/content/posts/未命名.canvas",
+    "src/content/posts/未命名.md",
     "AGENTS.md",
     "CHANGELOG.md",
     "README.md",

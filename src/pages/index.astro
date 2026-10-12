@@ -56,13 +56,9 @@ const homePath = getRelativeLocaleUrl(locale, "");
       <h1
         class="font-editorial mt-7 mb-6 text-4xl leading-snug font-semibold tracking-wide sm:text-6xl"
       >
-        你好，欢迎来到<br />
-        <span class="text-accent">我的博客。</span>
+        欢迎来到<br />
+        <span class="text-accent">{site.title}。</span>
       </h1>
-      <p class="text-lg">我是{site.author}。</p>
-      <p class="text-muted-foreground mt-3 max-w-2xl leading-loose">
-        {site.description}
-      </p>
       <LinkButton
         href={getRelativeLocaleUrl(locale, "about")}
         class="text-accent mt-6 gap-2 text-sm underline-offset-4 hover:underline"
