@@ -1,166 +1,107 @@
-# AstroPaper 📄
+# MyBlog
 
-![AstroPaper](public/default-og.jpg)
-[![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)](https://www.figma.com/community/file/1356898632249991861)
-![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![GitHub](https://img.shields.io/github/license/satnaing/astro-paper?color=%232F3741&style=for-the-badge)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white&style=for-the-badge)](https://conventionalcommits.org)
-[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=for-the-badge)](http://commitizen.github.io/cz-cli/)
+这是一个基于 **AstroPaper 和 Codex** 构建的个人博客，用来记录学习、生活与个人思考。
 
-AstroPaper is a minimal, responsive, accessible and SEO-friendly Astro blog theme. This theme is designed and crafted based on [my personal blog](https://satnaing.dev/blog).
+[AstroPaper](https://github.com/satnaing/astro-paper) 提供静态博客主题，Codex 协助完成网页设计、中文化和源码修改。项目保留完整源码，使用 Markdown 写作，通过 GitHub Pages 发布，也可以迁移到其他静态网站托管服务。
 
-Read [the blog posts](https://astro-paper.pages.dev/posts/) or check [the README Documentation Section](#-documentation) for more info.
+**访问博客：**[sqx1018.github.io/MyBlog](https://sqx1018.github.io/MyBlog/)
 
-## 🔥 Features
+## 功能与设计
 
-- [x] type-safe markdown
-- [x] super fast performance
-- [x] accessible (Keyboard/VoiceOver)
-- [x] responsive (mobile ~ desktops)
-- [x] SEO-friendly
-- [x] light & dark mode
-- [x] static search ([Pagefind](https://pagefind.app/))
-- [x] draft posts & pagination
-- [x] sitemap & rss feed
-- [x] MDX support
-- [x] collapsible table of contents
-- [x] followed best practices
-- [x] highly customizable
-- [x] dynamic OG image generation for blog posts ([Blog Post](https://astro-paper.pages.dev/posts/dynamic-og-image-generation-in-astropaper-blog-posts/))
-- [x] i18n ready
+- 中文界面，米白背景、深灰文字与墨绿色点缀。
+- 支持深色模式和手机、电脑浏览。
+- 使用 Markdown / MDX 写文章，支持草稿与分页。
+- 保留文章列表、标签、按年月归档、RSS 订阅及 Pagefind 搜索。
+- 静态输出，通过 GitHub Actions 自动构建并部署到 GitHub Pages。
 
-_Note: I've tested screen-reader accessibility of AstroPaper using **VoiceOver** on Mac and **TalkBack** on Android. I couldn't test all other screen-readers out there. However, accessibility enhancements in AstroPaper should be working fine on others as well._
+模板自带的示例文章及附带图片已清空。没有文章时，页面会显示空内容提示；添加自己的文章并重新构建后，文章列表、归档、标签和搜索会随之更新。
 
-## ✅ Lighthouse Score
+## 本地运行
 
-<p align="center">
-  <a href="https://pagespeed.web.dev/report?url=https%3A%2F%2Fastro-paper.pages.dev%2F&form_factor=desktop">
-    <img width="710" alt="AstroPaper Lighthouse Score" src="AstroPaper-lighthouse-score.svg">
-  </a>
-</p>
+准备 Node.js 24 和 npm，部署流程也使用 Node.js 24。以下命令适用于 Windows PowerShell，在项目目录中运行：
 
-## 🚀 Project Structure
-
-Inside of AstroPaper, you'll see the following folders and files:
-
-```bash
-/
-├── public/
-│   ├── pagefind/          # auto-generated on build
-│   ├── favicon.svg
-│   └── default-og.jpg
-├── src/
-│   ├── assets/
-│   │   ├── icons/
-│   │   └── images/
-│   ├── components/
-│   ├── content/
-│   │   ├── pages/
-│   │   │   └── about.md
-│   │   └── posts/
-│   │       └── some-blog-posts.md
-│   ├── i18n/
-│   ├── layouts/
-│   ├── pages/
-│   ├── scripts/
-│   ├── styles/
-│   ├── types/
-│   ├── utils/
-│   ├── config.ts
-│   └── content.config.ts
-├── astro-paper.config.ts  # user-defined configurations
-└── astro.config.ts
+```powershell
+npm.cmd install
+$env:ASTRO_TELEMETRY_DISABLED = '1'
+npm.cmd run dev
 ```
 
-All blog posts are stored in the `src/content/posts/` directory. You can organise posts into subdirectories — the subdirectory name becomes part of the post URL.
+打开 [http://localhost:4321/MyBlog/](http://localhost:4321/MyBlog/) 预览。若端口被占用，以终端显示的地址为准。保存文件后页面会自动更新，按 `Ctrl+C` 停止服务。
 
-## 📖 Documentation
+桌面项目也可以通过双击 `启动预览.cmd` 启动。
 
-Documentation can be read in two formats\_ _markdown_ & _blog post_.
+macOS / Linux 可将命令中的 `npm.cmd` 替换为 `npm`。
 
-- Configuration - [markdown](src/content/posts/how-to-configure-astropaper-theme.md) | [blog post](https://astro-paper.pages.dev/posts/how-to-configure-astropaper-theme/)
-- Add Posts - [markdown](src/content/posts/adding-new-post.md) | [blog post](https://astro-paper.pages.dev/posts/adding-new-posts-in-astropaper-theme/)
-- Customize Color Schemes - [markdown](src/content/posts/customizing-astropaper-theme-color-schemes.md) | [blog post](https://astro-paper.pages.dev/posts/customizing-astropaper-theme-color-schemes/)
-- Predefined Color Schemes - [markdown](src/content/posts/predefined-color-schemes.md) | [blog post](https://astro-paper.pages.dev/posts/predefined-color-schemes/)
+## 写文章
 
-## 💻 Tech Stack
+在 `src/content/posts/` 中新建 `.md` 或 `.mdx` 文件，例如 `my-first-post.md`：
 
-**Main Framework** - [Astro](https://astro.build/)  
-**Type Checking** - [TypeScript](https://www.typescriptlang.org/)  
-**Styling** - [TailwindCSS](https://tailwindcss.com/)  
-**UI/UX** - [Figma Design File](https://www.figma.com/community/file/1356898632249991861)  
-**Static Search** - [Pagefind](https://pagefind.app/)  
-**Icons** - [Tablers](https://tabler-icons.io/)  
-**Code Formatting** - [Prettier](https://prettier.io/)  
-**Deployment** - [Cloudflare Pages](https://pages.cloudflare.com/)  
-**Linting** - [ESLint](https://eslint.org)  
-**Dynamic OG images** - [Satori](https://github.com/vercel/satori) + [Sharp](https://sharp.pixelplumbing.com/) + [Astro Fonts](https://docs.astro.build/en/guides/fonts/)
-
-## 👨🏻‍💻 Running Locally
-
-You can start using this project locally by running the following command in your desired directory:
-
-```bash
-# pnpm
-pnpm create astro@latest --template satnaing/astro-paper
-
-# npm
-npm create astro@latest -- --template satnaing/astro-paper
-
-# yarn
-yarn create astro --template satnaing/astro-paper
-
-# bun
-bun create astro@latest -- --template satnaing/astro-paper
-```
-
-Then start the project by running the following commands:
-
-```bash
-# install dependencies if you haven't done so in the previous step.
-pnpm install
-
-# start running the project
-pnpm dev
-```
-
-## Google Site Verification (optional)
-
-You can add your [Google Site Verification HTML tag](https://support.google.com/webmasters/answer/9008080#meta_tag_verification&zippy=%2Chtml-tag) by setting `site.googleVerification` in `astro-paper.config.ts`:
-
-```ts file="astro-paper.config.ts"
-export default defineAstroPaperConfig({
-  site: {
-    // ...
-    googleVerification: "your-google-site-verification-value",
-  },
-  // ...
-});
-```
-
-> See [this discussion](https://github.com/satnaing/astro-paper/discussions/334#discussioncomment-10139247) for adding AstroPaper to the Google Search Console.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command          | Action                                                                                                                           |
-| :--------------- | :------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm install`   | Installs dependencies                                                                                                            |
-| `pnpm dev`       | Starts local dev server at `localhost:4321`                                                                                      |
-| `pnpm build`     | Type-checks, builds the site, runs Pagefind indexing, and copies the index to `public/pagefind/`                                 |
-| `pnpm preview`   | Preview your build locally, before deploying                                                                                     |
-| `pnpm sync`      | Generates TypeScript types for all Astro modules. [Learn more](https://docs.astro.build/en/reference/cli-reference/#astro-sync). |
-| `pnpm astro ...` | Run CLI commands like `astro add`, `astro check`                                                                                 |
-
-## ✨ Feedback & Suggestions
-
-If you have any suggestions/feedback, you can contact me via [my email](mailto:satnaingdev+astropaper@gmail.com). Alternatively, feel free to open an issue if you find bugs or want to request new features.
-
-## 📜 License
-
-Licensed under the MIT License, Copyright © 2026
-
+```markdown
+---
+title: 我的第一篇文章
+pubDatetime: 2026-10-12T08:00:00+08:00
+description: 用一句话介绍这篇文章。
+tags:
+  - 生活
+draft: false
 ---
 
-Made with 🤍 by [Sat Naing](https://satnaing.dev) 👨🏻‍💻 and [contributors](https://github.com/satnaing/astro-paper/graphs/contributors).
+在这里写正文，支持 Markdown。
+```
+
+将标题、发布日期、摘要、标签和正文改为自己的内容。`draft: true` 表示草稿，暂不公开；可添加 `featured: true` 将文章放入首页精选区。文章目录里的 `.gitkeep` 只用于保留空文件夹，不会显示为文章。
+
+新增、修改或删除文章后，运行 `npm.cmd run build` 更新搜索索引。本地开发时，搜索使用最近一次构建的索引。
+
+## 修改个人信息和设计
+
+| 位置                                            | 用途                                        |
+| ----------------------------------------------- | ------------------------------------------- |
+| `astro-paper.config.ts`                         | 博客名称、简介、作者、社交链接及功能开关    |
+| `src/content/pages/about.md`                    | 关于页面                                    |
+| `src/content/posts/`                            | Markdown / MDX 文章                         |
+| `src/styles/`                                   | 字体、配色与样式                            |
+| `src/i18n/lang/zh-CN.ts`                        | 中文界面文案                                |
+| `src/components/`、`src/layouts/`、`src/pages/` | 组件、布局与页面结构                        |
+| `astro.config.ts`                               | Astro 配置与 GitHub Pages 的 `/MyBlog` 路径 |
+
+首页和关于页中的“待填写”内容需要替换为自己的真实信息。
+
+项目中的 [AGENTS.md](AGENTS.md) 记录了供 Codex 参考的项目约定。修改时，可以明确说明想要的效果、需要保留的功能和验证方式，例如：
+
+> 请把首页文章列表改为单列，每篇显示标题、日期和两行摘要，手机上保持易读。保留文章内容和链接，完成后运行 npm.cmd run build 验证。
+
+更详细的本地操作说明见 [开始使用.md](开始使用.md)。
+
+## 构建与预览
+
+```powershell
+$env:ASTRO_TELEMETRY_DISABLED = '1'
+npm.cmd run build
+npm.cmd run preview
+```
+
+构建会检查类型、生成 `dist/` 静态网站，并通过 `scripts/build-search.mjs` 调用 Pagefind 官方 Node API，将搜索索引写入 `dist/pagefind/` 和 `public/pagefind/`。更新索引时会清除旧文件，让已删除的文章退出搜索。
+
+运行 `preview` 后，使用终端显示的地址查看构建结果。
+
+## 发布与更新
+
+仓库：[SQX1018/MyBlog](https://github.com/SQX1018/MyBlog)。自动部署配置位于 [.github/workflows/deploy.yml](.github/workflows/deploy.yml)。
+
+在 [仓库 Pages 设置](https://github.com/SQX1018/MyBlog/settings/pages) 中，将 **Build and deployment → Source** 设为 **GitHub Actions**。
+
+日常更新流程：
+
+1. 修改文章、个人信息或设计，在本地预览。
+2. 运行 `npm.cmd run build` 检查构建。
+3. 在 GitHub Desktop 中填写提交说明，点击 **Commit to main**，再点击 **Push origin**。
+4. 在 [Actions](https://github.com/SQX1018/MyBlog/actions) 中等待 **Build blog** 和 **Publish blog** 成功，然后查看博客。
+
+推送到 `main` 分支会自动启动部署，也可以在 Actions 的 **Deploy to GitHub Pages** 中使用 **Run workflow** 手动运行。
+
+## 致谢与许可
+
+本项目基于 [Sat Naing](https://github.com/satnaing) 及贡献者开发的 [AstroPaper](https://github.com/satnaing/astro-paper)，使用 Astro、TypeScript、Tailwind CSS 和 Pagefind。
+
+项目沿用 MIT 许可，保留原作者版权声明，详见 [LICENSE](LICENSE)。
