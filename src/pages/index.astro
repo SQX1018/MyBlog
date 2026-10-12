@@ -118,6 +118,14 @@ const homePath = getRelativeLocaleUrl(locale, "");
       )
     }
 
+    {
+      sortedPosts.length === 0 && (
+        <p class="text-muted-foreground pt-12 text-center leading-loose">
+          {t.home.noPosts}
+        </p>
+      )
+    }
+
     <div class="my-8 text-center">
       <LinkButton
         href={getRelativeLocaleUrl(locale, "posts")}

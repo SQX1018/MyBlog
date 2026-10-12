@@ -29,6 +29,7 @@ export default {
     recentPosts: "最近更新",
     allPosts: "浏览全部文章",
     rssFeed: "订阅 RSS",
+    noPosts: "这里还没有文章，期待第一篇记录。",
   },
   footer: { copyright: "版权", allRightsReserved: "保留所有权利。" },
   pages: {
@@ -42,6 +43,9 @@ export default {
     archivesDesc: "按年份与月份，回看每一篇记录。",
     searchTitle: "搜索文章",
     searchDesc: "输入关键词，查找文章与内容。",
+    noPosts: "暂时还没有文章。",
+    noTags: "暂时还没有文章标签。",
+    noSearch: "暂时还没有文章可供搜索。",
   },
   a11y: {
     skipToContent: "跳转到正文",

@@ -33,6 +33,7 @@ export default {
     recentPosts: "Recent Posts",
     allPosts: "All Posts",
     rssFeed: "RSS Feed",
+    noPosts: "No posts yet. The first story is still to come.",
   },
   footer: {
     copyright: "Copyright",
@@ -53,6 +54,9 @@ export default {
 
     searchTitle: "Search",
     searchDesc: "Search any article ...",
+    noPosts: "No posts yet.",
+    noTags: "No post tags yet.",
+    noSearch: "No posts to search yet.",
   },
   a11y: {
     skipToContent: "Skip to content",

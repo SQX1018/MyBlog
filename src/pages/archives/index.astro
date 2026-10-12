@@ -34,6 +34,11 @@ const monthFormatter = new Intl.DateTimeFormat(locale, { month: "long" });
 
   <Main pageTitle={t.pages.archivesTitle} pageDesc={t.pages.archivesDesc}>
     {
+      filteredPosts.length === 0 && (
+        <p class="text-muted-foreground py-6">{t.pages.noPosts}</p>
+      )
+    }
+    {
       Object.entries(
         getPostsByGroupCondition(filteredPosts, post =>
           post.data.pubDatetime.getFullYear()

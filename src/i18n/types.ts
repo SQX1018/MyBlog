@@ -31,6 +31,7 @@ export interface UIStrings {
     recentPosts: string;
     allPosts: string;
     rssFeed: string;
+    noPosts: string;
   };
   footer: {
     copyright: string;
@@ -51,6 +52,9 @@ export interface UIStrings {
 
     searchTitle: string;
     searchDesc: string;
+    noPosts: string;
+    noTags: string;
+    noSearch: string;
   };
   a11y: {
     skipToContent: string;
