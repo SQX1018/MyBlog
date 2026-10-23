@@ -9,12 +9,14 @@ import Footer from "@/components/Footer.astro";
 import Socials from "@/components/Socials.astro";
 import Card from "@/components/Card.astro";
 import LinkButton from "@/components/LinkButton.astro";
+import ThoughtAtlas from "@/components/ThoughtAtlas.astro";
+import HeroParticles from "@/components/HeroParticles.astro";
 import { getSortedPosts } from "@/utils/getSortedPosts";
 import { getAssetPath } from "@/utils/withBase";
 import { useTranslations } from "@/i18n";
 import config from "@/config";
 
-const { site, socials, posts: postsConfig } = config;
+const { socials, posts: postsConfig } = config;
 
 const locale = Astro.currentLocale ?? config.site.lang;
 const t = useTranslations(locale);
@@ -32,67 +34,55 @@ const homePath = getRelativeLocaleUrl(locale, "");
     id="main-content"
     data-layout="index"
     data-home-path={homePath}
-    class="app-layout my-1"
+    class="app-layout"
   >
-    <section
-      id="hero"
-      class="border-border border-b pt-10 pb-12 sm:pt-16 sm:pb-14"
-    >
-      <div class="text-accent flex items-center justify-between gap-4 text-sm">
-        <span class="flex items-center gap-2 tracking-widest">
-          <span class="bg-accent size-1.5 rounded-full" aria-hidden="true"
-          ></span>
-          个人博客
-        </span>
-        <a
-          href={getAssetPath("rss.xml")}
-          data-astro-reload
-          class="flex items-center gap-2 underline-offset-4 hover:underline"
-          aria-label={t.home.rssFeed}
-          title={t.home.rssFeed}
-        >
-          <IconRss width={16} height={16} aria-hidden="true" />
-          <span>{t.home.rssFeed}</span>
-        </a>
-      </div>
-      <h1
-        class="font-editorial mt-7 mb-6 text-4xl leading-snug font-semibold tracking-wide sm:text-6xl"
-      >
-        欢迎来到<br />
-        <span class="text-accent">{site.title}。</span>
-      </h1>
-      <LinkButton
-        href={getRelativeLocaleUrl(locale, "about")}
-        class="text-accent mt-6 gap-2 text-sm underline-offset-4 hover:underline"
-      >
-        关于我
-        <IconArrowRight class="size-4" aria-hidden="true" />
-      </LinkButton>
-      {
-        socials.length > 0 && (
-          <div class="mt-4 flex max-sm:flex-col sm:items-center">
-            <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">
-              {t.home.socialLinks}:
+    <section id="hero" class="home-hero">
+      <HeroParticles />
+      <div class="hero-copy">
+        <h1 class="hero-title">测量宇宙<br /><span>思考世界</span></h1>
+        <p class="hero-description">
+          我来自USTC，粒子物理与原子核物理专业，目前正在撰写毕业论文。
+        </p>
+        <div class="hero-actions">
+          <LinkButton
+            href={getRelativeLocaleUrl(locale, "posts")}
+            class="hero-primary"
+          >
+            开始阅读
+            <IconArrowRight class="size-4" aria-hidden="true" />
+          </LinkButton>
+          <a
+            href={getAssetPath("rss.xml")}
+            data-astro-reload
+            class="hero-rss"
+            aria-label={t.home.rssFeed}
+            title={t.home.rssFeed}
+          >
+            <IconRss width={17} height={17} aria-hidden="true" />
+          </a>
+        </div>
+        {
+          socials.length > 0 && (
+            <div class="hero-socials flex max-sm:flex-col sm:items-center">
+              <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">
+                {t.home.socialLinks}:
+              </div>
+              <Socials />
             </div>
-            <Socials />
-          </div>
-        )
-      }
+          )
+        }
+      </div>
+      <ThoughtAtlas />
     </section>
 
     {
       featuredPosts.length > 0 && (
-        <section
-          id="featured"
-          class:list={[
-            "pt-12 pb-6",
-            { "border-border border-b": recentPosts.length > 0 },
-          ]}
-        >
-          <h2 class="text-accent font-editorial flex items-center gap-3 text-2xl font-semibold tracking-wide before:h-5 before:w-0.5 before:bg-current">
-            {t.home.featured}
-          </h2>
-          <ul>
+        <section id="featured" class="home-section">
+          <div class="section-heading">
+            <h2>{t.home.featured}</h2>
+            <span>SELECTED SIGNALS</span>
+          </div>
+          <ul class="home-post-list">
             {featuredPosts.map(data => (
               <Card variant="h3" {...data} />
             ))}
@@ -103,11 +93,12 @@ const homePath = getRelativeLocaleUrl(locale, "");
 
     {
       recentPosts.length > 0 && (
-        <section id="recent-posts" class="pt-12 pb-6">
-          <h2 class="text-accent font-editorial flex items-center gap-3 text-2xl font-semibold tracking-wide before:h-5 before:w-0.5 before:bg-current">
-            {t.home.recentPosts}
-          </h2>
-          <ul>
+        <section id="recent-posts" class="home-section">
+          <div class="section-heading">
+            <h2>{t.home.recentPosts}</h2>
+            <span>LATEST OBSERVATIONS</span>
+          </div>
+          <ul class="home-post-list">
             {recentPosts.slice(0, postsConfig.perIndex).map(data => (
               <Card variant="h3" {...data} />
             ))}
@@ -124,13 +115,13 @@ const homePath = getRelativeLocaleUrl(locale, "");
       )
     }
 
-    <div class="my-8 text-center">
+    <div class="my-10 text-center">
       <LinkButton
         href={getRelativeLocaleUrl(locale, "posts")}
-        class="border-accent/40 text-accent hover:bg-accent hover:text-accent-foreground gap-2 rounded-full border px-6 py-2.5 text-sm transition-colors"
+        class="all-posts-link"
       >
         {t.home.allPosts}
-        <IconArrowRight class="inline-block rtl:-rotate-180" />
+        <IconArrowRight class="size-4 rtl:-rotate-180" />
       </LinkButton>
     </div>
   </main>

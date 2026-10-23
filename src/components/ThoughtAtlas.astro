@@ -1,0 +1,114 @@
+<div id="thought-atlas" class="thought-atlas">
+  <svg
+    class="atlas-geometry"
+    viewBox="0 0 640 480"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <g class="detector-far">
+      <g class="detector-stars">
+        <circle cx="72" cy="102" r="1.2"></circle>
+        <circle cx="116" cy="338" r="1"></circle>
+        <circle cx="188" cy="48" r="1.1"></circle>
+        <circle cx="250" cy="418" r="1.2"></circle>
+        <circle cx="359" cy="30" r="1"></circle>
+        <circle cx="434" cy="432" r="1.1"></circle>
+        <circle cx="520" cy="62" r="1.2"></circle>
+        <circle cx="586" cy="348" r="1"></circle>
+        <circle cx="608" cy="172" r="1.1"></circle>
+        <circle cx="44" cy="238" r="1"></circle>
+      </g>
+      <g class="detector-orbits">
+        <circle cx="326" cy="238" r="174"></circle>
+        <circle cx="326" cy="238" r="126" stroke-dasharray="1 10"></circle>
+        <path d="M152 238H500M326 64V412"></path>
+        <path d="M203 115L449 361M449 115L203 361" stroke-dasharray="1 14"
+        ></path>
+      </g>
+    </g>
+
+    <g class="detector-mid">
+      <g class="detector-chamber">
+        <path d="M177 125L396 81L493 157L274 201L177 125Z"></path>
+        <path d="M177 125V286L274 362V201M274 362L493 318V157M396 81V242"
+        ></path>
+        <path d="M177 178L274 254L493 210M177 232L274 308L493 264"></path>
+        <path
+          d="M221 111L318 187V348M265 100L362 176V334M309 92L406 168V326M353 86L450 162V320"
+        ></path>
+      </g>
+      <g class="detector-slices">
+        <path d="M202 143L274 201L448 166"></path>
+        <path d="M202 196L274 254L448 219"></path>
+        <path d="M202 250L274 308L448 273"></path>
+      </g>
+      <g class="detector-vertex">
+        <circle cx="326" cy="238" r="43"></circle>
+        <circle cx="326" cy="238" r="25" stroke-dasharray="2 5"></circle>
+        <path d="M326 184V207M326 269V292M272 238H295M357 238H380"></path>
+        <circle cx="326" cy="238" r="3" class="detector-point-fill"></circle>
+      </g>
+      <g class="detector-tracks-secondary">
+        <path
+          d="M326 238C383 202 428 197 463 214C498 231 499 269 468 281C437 293 410 269 422 247"
+        ></path>
+        <path d="M326 238C284 279 252 321 262 355C272 389 318 391 340 365"
+        ></path>
+        <path d="M326 238C368 275 403 319 446 344C482 365 526 357 552 326"
+        ></path>
+      </g>
+    </g>
+
+    <g class="detector-near">
+      <g class="detector-tracks-primary">
+        <path d="M54 34C135 79 225 148 326 238"></path>
+        <path d="M326 238C400 172 478 123 590 88"></path>
+        <path
+          d="M326 238C377 267 407 309 399 345C391 381 349 397 319 376C289 355 292 317 319 305"
+        ></path>
+      </g>
+      <g class="detector-intersections">
+        <circle cx="177" cy="125" r="3"></circle>
+        <circle cx="274" cy="201" r="3"></circle>
+        <circle cx="396" cy="81" r="3"></circle>
+        <circle cx="493" cy="157" r="3"></circle>
+        <circle cx="274" cy="362" r="3"></circle>
+        <circle cx="493" cy="318" r="3"></circle>
+        <circle cx="400" cy="172" r="2.5"></circle>
+        <circle cx="377" cy="267" r="2.5"></circle>
+      </g>
+      <g class="detector-ticks">
+        <path d="M326 51V64M326 412V425M139 238H152M500 238H513"></path>
+        <path d="M211 87L217 99M435 377L441 389M173 359L185 353M467 123L479 117"
+        ></path>
+        <path d="M90 381H118M90 391H108M90 401H118"></path>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<script>
+  function setupThoughtAtlas() {
+    const atlas = document.querySelector<HTMLElement>("#thought-atlas");
+    if (!atlas || atlas.dataset.ready === "true") return;
+    atlas.dataset.ready = "true";
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    atlas.addEventListener("pointermove", event => {
+      if (reduceMotion.matches || event.pointerType === "touch") return;
+      const bounds = atlas.getBoundingClientRect();
+      const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
+      const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
+      atlas.style.setProperty("--pointer-x", x.toFixed(3));
+      atlas.style.setProperty("--pointer-y", y.toFixed(3));
+    });
+    atlas.addEventListener("pointerleave", () => {
+      atlas.style.setProperty("--pointer-x", "0");
+      atlas.style.setProperty("--pointer-y", "0");
+    });
+  }
+
+  setupThoughtAtlas();
+  document.addEventListener("astro:after-swap", setupThoughtAtlas);
+</script>

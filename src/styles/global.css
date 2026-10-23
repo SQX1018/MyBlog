@@ -2,6 +2,7 @@
 @import "katex/dist/katex.min.css";
 @import "./theme.css";
 @import "./typography.css";
+@import "./observatory.css";
 @import "rehype-callouts/theme/obsidian";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
@@ -44,7 +45,7 @@
 }
 
 @utility max-w-app {
-  max-width: 55rem;
+  max-width: 70rem;
 }
 
 @utility app-layout {

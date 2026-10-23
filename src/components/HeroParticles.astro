@@ -1,0 +1,197 @@
+<canvas id="hero-particles" class="hero-particles" aria-hidden="true"></canvas>
+
+<script>
+  let stopPreviousParticles = () => {};
+
+  function setupHeroParticles() {
+    stopPreviousParticles();
+
+    const canvas = document.querySelector<HTMLCanvasElement>("#hero-particles");
+    const hero = canvas?.closest<HTMLElement>(".home-hero");
+    const context = canvas?.getContext("2d");
+    if (!canvas || !hero || !context) return;
+
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const pointer = { x: -1000, y: -1000 };
+    let width = 0;
+    let height = 0;
+    let frame = 0;
+    let lastTime = 0;
+    let visible = true;
+    let particles: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      radius: number;
+      alpha: number;
+      phase: number;
+    }> = [];
+
+    const createParticles = () => {
+      const count = width < 640 ? 22 : 42;
+      particles = Array.from({ length: count }, (_, index) => {
+        const nearTitle = index % 3 === 0;
+        return {
+          x:
+            (nearTitle
+              ? 0.03 + Math.random() * 0.4
+              : 0.43 + Math.random() * 0.54) * width,
+          y: (0.06 + Math.random() * 0.88) * height,
+          vx: (Math.random() - 0.5) * 0.055,
+          vy: (Math.random() - 0.5) * 0.045,
+          radius: 0.65 + Math.random() * 1.15,
+          alpha: 0.18 + Math.random() * 0.35,
+          phase: Math.random() * Math.PI * 2,
+        };
+      });
+      canvas.dataset.particles = String(count);
+    };
+
+    const resize = () => {
+      const bounds = hero.getBoundingClientRect();
+      width = bounds.width;
+      height = bounds.height;
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      createParticles();
+      draw(0, false);
+    };
+
+    const draw = (time: number, move: boolean) => {
+      context.clearRect(0, 0, width, height);
+      const color = getComputedStyle(canvas).color;
+      const delta = lastTime ? Math.min((time - lastTime) / 16.67, 2) : 1;
+      lastTime = time;
+
+      particles.forEach((particle, index) => {
+        if (move) {
+          particle.x += particle.vx * delta;
+          particle.y += particle.vy * delta;
+
+          const dx = particle.x - pointer.x;
+          const dy = particle.y - pointer.y;
+          const distance = Math.hypot(dx, dy);
+          if (distance > 0 && distance < 95) {
+            const force = (1 - distance / 95) * 0.12 * delta;
+            particle.x += (dx / distance) * force;
+            particle.y += (dy / distance) * force;
+          }
+
+          if (particle.x < -8) particle.x = width + 8;
+          if (particle.x > width + 8) particle.x = -8;
+          if (particle.y < -8) particle.y = height + 8;
+          if (particle.y > height + 8) particle.y = -8;
+        }
+
+        for (
+          let otherIndex = index + 1;
+          otherIndex < particles.length;
+          otherIndex++
+        ) {
+          const other = particles[otherIndex];
+          const distance = Math.hypot(
+            particle.x - other.x,
+            particle.y - other.y
+          );
+          if (distance > 58) continue;
+          context.globalAlpha = (1 - distance / 58) * 0.1;
+          context.strokeStyle = color;
+          context.lineWidth = 0.6;
+          context.beginPath();
+          context.moveTo(particle.x, particle.y);
+          context.lineTo(other.x, other.y);
+          context.stroke();
+        }
+
+        const shimmer = move
+          ? 0.82 + Math.sin(time * 0.0007 + particle.phase) * 0.18
+          : 0.85;
+        context.globalAlpha = particle.alpha * shimmer;
+        context.fillStyle = color;
+        context.beginPath();
+        context.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+        context.fill();
+
+        if (index % 9 === 0) {
+          const size = particle.radius * 3.2;
+          context.globalAlpha *= 0.65;
+          context.strokeStyle = color;
+          context.lineWidth = 0.65;
+          context.beginPath();
+          context.moveTo(particle.x - size, particle.y);
+          context.lineTo(particle.x + size, particle.y);
+          context.moveTo(particle.x, particle.y - size);
+          context.lineTo(particle.x, particle.y + size);
+          context.stroke();
+        }
+      });
+      context.globalAlpha = 1;
+    };
+
+    const animate = (time: number) => {
+      if (!canvas.isConnected) return;
+      if (visible && !document.hidden) draw(time, true);
+      frame = requestAnimationFrame(animate);
+    };
+
+    const updateMotion = () => {
+      cancelAnimationFrame(frame);
+      const reduced = motionQuery.matches;
+      canvas.dataset.motion = reduced ? "reduced" : "active";
+      lastTime = 0;
+      if (reduced) {
+        draw(0, false);
+      } else {
+        frame = requestAnimationFrame(animate);
+      }
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (motionQuery.matches || event.pointerType === "touch") return;
+      const bounds = hero.getBoundingClientRect();
+      pointer.x = event.clientX - bounds.left;
+      pointer.y = event.clientY - bounds.top;
+    };
+    const onPointerLeave = () => {
+      pointer.x = -1000;
+      pointer.y = -1000;
+    };
+
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(hero);
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+    });
+    intersectionObserver.observe(hero);
+    const themeObserver = new MutationObserver(() => draw(0, false));
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    hero.addEventListener("pointermove", onPointerMove);
+    hero.addEventListener("pointerleave", onPointerLeave);
+    motionQuery.addEventListener("change", updateMotion);
+    resize();
+    updateMotion();
+
+    stopPreviousParticles = () => {
+      cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+      intersectionObserver.disconnect();
+      themeObserver.disconnect();
+      hero.removeEventListener("pointermove", onPointerMove);
+      hero.removeEventListener("pointerleave", onPointerLeave);
+      motionQuery.removeEventListener("change", updateMotion);
+    };
+  }
+
+  setupHeroParticles();
+  document.addEventListener("astro:after-swap", setupHeroParticles);
+  document.addEventListener("astro:before-swap", () => stopPreviousParticles());
+</script>
