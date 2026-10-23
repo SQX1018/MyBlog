@@ -1,4 +1,4 @@
-/* Register design tokens for Tailwind v4 */
+/* Blue-black observatory palette */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -9,29 +9,40 @@
   --color-border: var(--border);
   --font-app:
     "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
-  --font-editorial: "Songti SC", "STSong", "SimSun", "Noto Serif CJK SC", serif;
-  --font-code: var(--font-google-sans-code), monospace;
+  --font-editorial:
+    "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --font-code: "Google Sans Code Local", "Cascadia Code", monospace;
 }
 
-/* Light theme values */
 :root,
 [data-theme="light"] {
-  --background: #f7f4ec;
-  --foreground: #303632;
-  --accent: #606060;
+  color-scheme: light;
+  --background: #f4f6fa;
+  --foreground: #17212e;
+  --accent: #2563eb;
   --accent-foreground: #ffffff;
-  --muted: #eae7de;
-  --muted-foreground: #657068;
-  --border: #dcded3;
+  --muted: #e3eaf2;
+  --muted-foreground: #526377;
+  --border: #c7d3e0;
+  --panel: rgb(251 253 255 / 78%);
+  --grid: rgb(45 86 128 / 7%);
+  --line: rgb(9 105 218 / 32%);
+  --node-surface: #f8fbff;
+  --shadow: rgb(30 65 100 / 10%);
 }
 
-/* Dark theme values */
 [data-theme="dark"] {
-  --background: #000000;
-  --foreground: #e5e7eb;
-  --accent: #60a5fa;
-  --accent-foreground: #000000;
-  --muted: #141414;
-  --muted-foreground: #a3a3a3;
-  --border: #2a2a2a;
+  color-scheme: dark;
+  --background: #05090f;
+  --foreground: #e9f1fa;
+  --accent: #63b3ff;
+  --accent-foreground: #04101d;
+  --muted: #0e1926;
+  --muted-foreground: #91a4ba;
+  --border: #1d3147;
+  --panel: rgb(8 16 26 / 80%);
+  --grid: rgb(112 174 235 / 7%);
+  --line: rgb(99 179 255 / 34%);
+  --node-surface: #09121d;
+  --shadow: rgb(0 0 0 / 32%);
 }

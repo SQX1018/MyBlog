@@ -18,9 +18,10 @@ const currentYear = new Date().getFullYear();
   class:list={["app-layout", { "mt-auto": !noMarginTop }, className]}
   {...attrs}
 >
-  <div
-    class="border-border text-muted-foreground flex flex-col items-center justify-between gap-3 border-t py-8 text-sm sm:flex-row-reverse"
-  >
+  <div class="site-footer-inner text-muted-foreground">
+    <div class="footer-sigil" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
     {config.socials.length > 0 && <Socials />}
     <div
       class="flex flex-wrap items-center justify-center gap-y-1 text-center sm:justify-start"
@@ -29,5 +30,8 @@ const currentYear = new Date().getFullYear();
       <span aria-hidden="true">&nbsp;·&nbsp;</span>
       <span>{t.footer.allRightsReserved}</span>
     </div>
+    <span class="footer-coordinate" aria-hidden="true"
+      >EXPLORE / QUESTION / UNDERSTAND</span
+    >
   </div>
 </footer>
