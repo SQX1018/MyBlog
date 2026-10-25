@@ -1,3 +1,172 @@
+---
+type Point = readonly [number, number];
+
+// Natural cubic splines keep tangent and curvature continuous along each route.
+// These controls are generated at build time, not in the animation loop.
+function smoothRoute(points: readonly Point[], vertexIndex: number) {
+  const count = points.length - 1;
+  const firstControls = (axis: 0 | 1) => {
+    const diagonal = Array<number>(count).fill(4);
+    const values = Array.from({ length: count }, (_, index) =>
+      index === 0
+        ? points[0][axis] + 2 * points[1][axis]
+        : index === count - 1
+          ? 8 * points[index][axis] + points[index + 1][axis]
+          : 4 * points[index][axis] + 2 * points[index + 1][axis]
+    );
+    diagonal[0] = 2;
+    diagonal[count - 1] = 7;
+    for (let index = 1; index < count; index++) {
+      const factor = (index === count - 1 ? 2 : 1) / diagonal[index - 1];
+      diagonal[index] -= factor;
+      values[index] -= factor * values[index - 1];
+    }
+    values[count - 1] /= diagonal[count - 1];
+    for (let index = count - 2; index >= 0; index--) {
+      values[index] = (values[index] - values[index + 1]) / diagonal[index];
+    }
+    return values;
+  };
+  const x = firstControls(0);
+  const y = firstControls(1);
+  const segments = Array.from({ length: count }, (_, index) => {
+    const end = points[index + 1];
+    const second =
+      index === count - 1
+        ? [(end[0] + x[index]) / 2, (end[1] + y[index]) / 2]
+        : [2 * end[0] - x[index + 1], 2 * end[1] - y[index + 1]];
+    const controls = [x[index], y[index], ...second, ...end]
+      .map(value => Number(value.toFixed(3)))
+      .join(" ");
+    return `C${controls}`;
+  });
+  return {
+    entry: `M${points[0].join(" ")}${segments.slice(0, vertexIndex).join("")}`,
+    exit: segments.slice(vertexIndex).join(""),
+  };
+}
+
+const { entry: leftEntry, exit: leftExit } = smoothRoute(
+  [
+    [54, 34],
+    [164, 103],
+    [290, 184],
+    [326, 238],
+    [303, 292],
+    [262, 355],
+    [295, 382],
+    [340, 365],
+  ],
+  3
+);
+const { entry: rightEntry, exit: rightExit } = smoothRoute(
+  [
+    [590, 88],
+    [484, 126],
+    [364, 192],
+    [326, 238],
+    [372, 290],
+    [399, 345],
+    [360, 383],
+    [319, 376],
+    [298, 342],
+    [319, 305],
+  ],
+  3
+);
+const routes = [
+  {
+    name: "left",
+    entry: leftEntry,
+    exit: leftExit,
+    speed: 80,
+    start: { x: 54, y: 34 },
+    restProgress: 0.25,
+  },
+  {
+    name: "right",
+    entry: rightEntry,
+    exit: rightExit,
+    speed: 55,
+    start: { x: 590, y: 88 },
+    restProgress: 0.65,
+  },
+];
+
+// An artistic isometric cutaway of VLAST-P, not an engineering drawing.
+const detectorOrigin: Point = [218, 105];
+const detectorU: Point = [164, -40];
+const detectorV: Point = [96, 58];
+const detectorPoint = (y: number, s: number, t: number): Point => [
+  detectorOrigin[0] + detectorU[0] * s + detectorV[0] * t,
+  y + detectorU[1] * s + detectorV[1] * t,
+];
+const pathFrom = (points: readonly Point[], close = false) =>
+  `${points.map((point, index) => `${index ? "L" : "M"}${point.join(" ")}`).join("")}${close ? "Z" : ""}`;
+const detectorPlane = (y: number, inset = 0) =>
+  pathFrom(
+    [
+      detectorPoint(y, inset, inset),
+      detectorPoint(y, 1 - inset, inset),
+      detectorPoint(y, 1 - inset, 1 - inset),
+      detectorPoint(y, inset, 1 - inset),
+    ],
+    true
+  );
+const detectorEdge = (y: number, thickness = 3) => {
+  const frontLeft = detectorPoint(y, 0, 1);
+  const frontRight = detectorPoint(y, 1, 1);
+  const backRight = detectorPoint(y, 1, 0);
+  return (
+    pathFrom([
+      [frontLeft[0], frontLeft[1] + thickness],
+      frontLeft,
+      frontRight,
+      [frontRight[0], frontRight[1] + thickness],
+    ]) +
+    pathFrom([frontRight, backRight, [backRight[0], backRight[1] + thickness]])
+  );
+};
+const measurementLines = (y: number, direction: "x" | "y") =>
+  [0.18, 0.39, 0.61, 0.82].map(position =>
+    pathFrom(
+      direction === "x"
+        ? [detectorPoint(y, 0.07, position), detectorPoint(y, 0.93, position)]
+        : [detectorPoint(y, position, 0.07), detectorPoint(y, position, 0.93)]
+    )
+  );
+const trackerLayers = [
+  { y: 184, direction: "x" as const },
+  { y: 190, direction: "y" as const },
+  { y: 208, direction: "x" as const },
+  { y: 214, direction: "y" as const },
+  { y: 232, direction: "x" as const },
+  { y: 238, direction: "y" as const },
+];
+const crystals = Array.from({ length: 5 }, (_, row) =>
+  Array.from({ length: 5 }, (_, column) => ({ row, column }))
+)
+  .flat()
+  .sort((a, b) => a.row + a.column - (b.row + b.column))
+  .map(({ row, column }) => {
+    const gap = 0.018;
+    const s0 = column / 5 + gap;
+    const s1 = (column + 1) / 5 - gap;
+    const t0 = row / 5 + gap;
+    const t1 = (row + 1) / 5 - gap;
+    const a = detectorPoint(272, s0, t0);
+    const b = detectorPoint(272, s1, t0);
+    const c = detectorPoint(272, s1, t1);
+    const d = detectorPoint(272, s0, t1);
+    const down = ([x, y]: Point): Point => [x, y + 36];
+    return {
+      top: pathFrom([a, b, c, d], true),
+      right: pathFrom([b, c, down(c), down(b)], true),
+      front: pathFrom([d, c, down(c), down(d)], true),
+    };
+  });
+---
+
 <div id="thought-atlas" class="thought-atlas">
   <svg
     class="atlas-geometry"
@@ -6,6 +175,19 @@
     xmlns="http://www.w3.org/2000/svg"
     aria-hidden="true"
   >
+    <defs>
+      {
+        routes.map(route => (
+          <path
+            data-atlas-route={route.name}
+            data-entry={route.entry}
+            data-speed={route.speed}
+            data-rest-progress={route.restProgress}
+            d={`${route.entry}${route.exit}`}
+          />
+        ))
+      }
+    </defs>
     <g class="detector-far">
       <g class="detector-stars">
         <circle cx="72" cy="102" r="1.2"></circle>
@@ -29,31 +211,53 @@
     </g>
 
     <g class="detector-mid">
-      <g class="detector-chamber">
-        <path d="M177 125L396 81L493 157L274 201L177 125Z"></path>
-        <path d="M177 125V286L274 362V201M274 362L493 318V157M396 81V242"
-        ></path>
-        <path d="M177 178L274 254L493 210M177 232L274 308L493 264"></path>
+      <g class="detector-shell">
+        <!-- The upper side guards stop early to expose the tracking volume. -->
         <path
-          d="M221 111L318 187V348M265 100L362 176V334M309 92L406 168V326M353 86L450 162V320"
+          class="detector-panel"
+          d="M218 105L314 163L314 190L218 132ZM382 65L478 123L478 177L382 119Z"
         ></path>
+        <path d={detectorPlane(105)}></path>
+        <path d={detectorEdge(105, 6)}></path>
+        <path d="M218 132V184M314 190V218M478 177V246M382 119V160"></path>
+        <path d="M218 184L228 190M304 212L314 218M468 240L478 246"></path>
       </g>
-      <g class="detector-slices">
-        <path d="M202 143L274 201L448 166"></path>
-        <path d="M202 196L274 254L448 219"></path>
-        <path d="M202 250L274 308L448 273"></path>
+
+      <g class="detector-converter">
+        <path d={detectorPlane(163, 0.035)}></path>
+        <path d={detectorEdge(163, 4)}></path>
       </g>
-      <g class="detector-vertex">
-        <circle cx="326" cy="238" r="43"></circle>
-        <circle cx="326" cy="238" r="25" stroke-dasharray="2 5"></circle>
-        <path d="M326 184V207M326 269V292M272 238H295M357 238H380"></path>
-        <circle cx="326" cy="238" r="3" class="detector-point-fill"></circle>
+
+      <g class="detector-tracker">
+        {
+          trackerLayers.map(layer => (
+            <g class={`detector-silicon detector-silicon-${layer.direction}`}>
+              <path d={detectorPlane(layer.y, 0.055)} />
+              <path d={detectorEdge(layer.y, 2)} />
+              {measurementLines(layer.y, layer.direction).map(line => (
+                <path class="detector-strip" d={line} />
+              ))}
+            </g>
+          ))
+        }
+      </g>
+
+      <g class="detector-calorimeter">
+        <path class="detector-base" d={detectorPlane(314, 0.015)}></path>
+        <path class="detector-base" d={detectorEdge(314, 7)}></path>
+        {
+          crystals.map(crystal => (
+            <g class="detector-crystal">
+              <path class="detector-crystal-right" d={crystal.right} />
+              <path class="detector-crystal-front" d={crystal.front} />
+              <path class="detector-crystal-top" d={crystal.top} />
+            </g>
+          ))
+        }
       </g>
       <g class="detector-tracks-secondary">
         <path
           d="M326 238C383 202 428 197 463 214C498 231 499 269 468 281C437 293 410 269 422 247"
-        ></path>
-        <path d="M326 238C284 279 252 321 262 355C272 389 318 391 340 365"
         ></path>
         <path d="M326 238C368 275 403 319 446 344C482 365 526 357 552 326"
         ></path>
@@ -61,20 +265,26 @@
     </g>
 
     <g class="detector-near">
+      <g class="detector-vertex">
+        <circle cx="326" cy="238" r="43"></circle>
+        <circle cx="326" cy="238" r="25" stroke-dasharray="2 5"></circle>
+        <path d="M326 184V207M326 269V292M272 238H295M357 238H380"></path>
+        <circle cx="326" cy="238" r="3" class="detector-point-fill"></circle>
+      </g>
+      <g class="detector-tracks-secondary">
+        <path d={`M326 238${leftExit}`}></path>
+      </g>
       <g class="detector-tracks-primary">
-        <path d="M54 34C135 79 225 148 326 238"></path>
-        <path d="M326 238C400 172 478 123 590 88"></path>
-        <path
-          d="M326 238C377 267 407 309 399 345C391 381 349 397 319 376C289 355 292 317 319 305"
-        ></path>
+        <path d={leftEntry}></path>
+        <path d={rightEntry}></path>
+        <path d={`M326 238${rightExit}`}></path>
       </g>
       <g class="detector-intersections">
-        <circle cx="177" cy="125" r="3"></circle>
-        <circle cx="274" cy="201" r="3"></circle>
-        <circle cx="396" cy="81" r="3"></circle>
-        <circle cx="493" cy="157" r="3"></circle>
-        <circle cx="274" cy="362" r="3"></circle>
-        <circle cx="493" cy="318" r="3"></circle>
+        <circle cx="218" cy="105" r="2.5"></circle>
+        <circle cx="382" cy="65" r="2.5"></circle>
+        <circle cx="478" cy="123" r="2.5"></circle>
+        <circle cx="314" cy="372" r="2.5"></circle>
+        <circle cx="478" cy="330" r="2.5"></circle>
         <circle cx="400" cy="172" r="2.5"></circle>
         <circle cx="377" cy="267" r="2.5"></circle>
       </g>
@@ -84,31 +294,200 @@
         ></path>
         <path d="M90 381H118M90 391H108M90 401H118"></path>
       </g>
+      <g class="atlas-track-particles" aria-hidden="true" pointer-events="none">
+        {
+          routes.map(route => (
+            <circle
+              class="atlas-track-particle"
+              data-atlas-particle={route.name}
+              data-speed={route.speed}
+              cx={route.start.x}
+              cy={route.start.y}
+              r="3.6"
+            />
+          ))
+        }
+      </g>
     </g>
   </svg>
 </div>
 
 <script>
+  let stopPreviousAtlas = () => {};
+
   function setupThoughtAtlas() {
+    stopPreviousAtlas();
+
     const atlas = document.querySelector<HTMLElement>("#thought-atlas");
-    if (!atlas || atlas.dataset.ready === "true") return;
+    if (!atlas) return;
     atlas.dataset.ready = "true";
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    atlas.addEventListener("pointermove", event => {
+    const particles = Array.from(
+      atlas.querySelectorAll<SVGPathElement>("[data-atlas-route]")
+    ).flatMap(path => {
+      const name = path.dataset.atlasRoute;
+      const particle = atlas.querySelector<SVGCircleElement>(
+        `[data-atlas-particle="${name}"]`
+      );
+      const length = path.getTotalLength();
+      const speed = Number(path.dataset.speed);
+      if (!particle || !length || !speed) return [];
+
+      // Both the visible segments and the motion route use the same geometry.
+      const entry = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      entry.setAttribute("d", path.dataset.entry ?? "");
+      path.dataset.vertexDistance = String(entry.getTotalLength());
+      path.dataset.totalLength = String(length);
+
+      return [
+        {
+          path,
+          particle,
+          length,
+          speed,
+          distance: 0,
+          restProgress: Number(path.dataset.restProgress),
+        },
+      ];
+    });
+    let frame = 0;
+    let lastTime = 0;
+    let disposed = false;
+    const bounds = atlas.getBoundingClientRect();
+    let visible = bounds.bottom > 0 && bounds.top < window.innerHeight;
+
+    const drawParticle = (state: (typeof particles)[number], still = false) => {
+      const point = state.path.getPointAtLength(state.distance);
+      const fadeDistance = Math.min(state.speed * 0.18, state.length * 0.08);
+      const alpha = still
+        ? 0.95
+        : Math.min(
+            1,
+            state.distance / fadeDistance,
+            (state.length - state.distance) / fadeDistance
+          ) * 0.95;
+      state.particle.setAttribute("cx", String(point.x));
+      state.particle.setAttribute("cy", String(point.y));
+      state.particle.setAttribute("opacity", String(alpha));
+      state.particle.dataset.distance = String(state.distance);
+    };
+
+    const resetPointer = () => {
+      atlas.style.setProperty("--pointer-x", "0");
+      atlas.style.setProperty("--pointer-y", "0");
+    };
+
+    const animate = (time: number) => {
+      frame = 0;
+      if (disposed || !atlas.isConnected) return;
+      if (lastTime) {
+        const delta = Math.max(0, (time - lastTime) / 1000);
+        for (const state of particles) {
+          state.distance =
+            (state.distance + state.speed * delta) % state.length;
+          drawParticle(state);
+        }
+      }
+      lastTime = time;
+      frame = requestAnimationFrame(animate);
+    };
+
+    const updateMotion = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      lastTime = 0;
+      if (disposed) return;
+
+      if (reduceMotion.matches) {
+        resetPointer();
+        atlas.dataset.motion = "reduced";
+        for (const state of particles) {
+          state.distance = state.restProgress * state.length;
+          drawParticle(state, true);
+        }
+      } else {
+        const active = visible && !document.hidden;
+        atlas.dataset.motion = active ? "active" : "paused";
+        if (active && particles.length) {
+          lastTime = performance.now();
+          frame = requestAnimationFrame(animate);
+        }
+      }
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
       if (reduceMotion.matches || event.pointerType === "touch") return;
       const bounds = atlas.getBoundingClientRect();
       const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 2;
       const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 2;
       atlas.style.setProperty("--pointer-x", x.toFixed(3));
       atlas.style.setProperty("--pointer-y", y.toFixed(3));
+    };
+    const intersectionObserver = new IntersectionObserver(([entry]) => {
+      if (disposed || visible === entry.isIntersecting) return;
+      visible = entry.isIntersecting;
+      updateMotion();
     });
-    atlas.addEventListener("pointerleave", () => {
-      atlas.style.setProperty("--pointer-x", "0");
-      atlas.style.setProperty("--pointer-y", "0");
-    });
+    intersectionObserver.observe(atlas);
+    atlas.addEventListener("pointermove", onPointerMove);
+    atlas.addEventListener("pointerleave", resetPointer);
+    reduceMotion.addEventListener("change", updateMotion);
+    document.addEventListener("visibilitychange", updateMotion);
+
+    for (const state of particles) drawParticle(state);
+    updateMotion();
+
+    stopPreviousAtlas = () => {
+      disposed = true;
+      cancelAnimationFrame(frame);
+      intersectionObserver.disconnect();
+      atlas.removeEventListener("pointermove", onPointerMove);
+      atlas.removeEventListener("pointerleave", resetPointer);
+      reduceMotion.removeEventListener("change", updateMotion);
+      document.removeEventListener("visibilitychange", updateMotion);
+      atlas.dataset.motion = "paused";
+      delete atlas.dataset.ready;
+    };
   }
 
   setupThoughtAtlas();
   document.addEventListener("astro:after-swap", setupThoughtAtlas);
+  document.addEventListener("astro:before-swap", () => stopPreviousAtlas());
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) setupThoughtAtlas();
+  });
 </script>
+
+<style>
+  .atlas-track-particles {
+    color: var(--accent);
+    pointer-events: none;
+  }
+
+  .atlas-track-particle {
+    fill: currentColor;
+    stroke: none;
+    filter: drop-shadow(0 0 3px currentColor);
+  }
+
+  .atlas-track-particle[data-atlas-particle="right"] {
+    color: #737373;
+  }
+
+  :global([data-theme="dark"])
+    .atlas-track-particle[data-atlas-particle="right"] {
+    color: #b3b3b3;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .detector-far,
+    .detector-mid,
+    .detector-near {
+      transform: none;
+    }
+  }
+</style>
