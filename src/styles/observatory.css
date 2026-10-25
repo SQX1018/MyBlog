@@ -356,6 +356,41 @@
     color: var(--accent);
   }
 
+  .atlas-foreground,
+  .atlas-model-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .atlas-foreground {
+    z-index: 2;
+  }
+
+  .atlas-model-canvas {
+    z-index: 1;
+    opacity: 0;
+    transform: translate(
+      calc(var(--pointer-x) * 4px),
+      calc(var(--pointer-y) * 4px)
+    );
+    transition: transform 260ms ease-out;
+  }
+
+  .thought-atlas[data-webgl="ready"] .atlas-model-canvas {
+    opacity: 0.9;
+  }
+
+  .thought-atlas[data-webgl="ready"] .detector-static-model {
+    visibility: hidden;
+  }
+
+  .thought-atlas[data-webgl="fallback"] .atlas-model-canvas {
+    display: none;
+  }
+
   .detector-far,
   .detector-mid,
   .detector-near {
@@ -396,16 +431,76 @@
     opacity: 0.2;
   }
 
-  .detector-chamber {
+  .detector-shell,
+  .detector-converter,
+  .detector-tracker,
+  .detector-calorimeter {
     stroke: var(--foreground);
-    stroke-width: 0.85;
-    opacity: 0.24;
+    stroke-width: 0.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
-  .detector-slices {
+  .detector-shell {
+    opacity: 0.32;
+  }
+
+  .detector-panel {
+    fill: var(--foreground);
+    fill-opacity: 0.035;
+  }
+
+  .detector-converter {
     stroke: currentColor;
-    stroke-width: 0.8;
+    opacity: 0.48;
+  }
+
+  .detector-converter > path:first-child {
+    fill: var(--accent);
+    fill-opacity: 0.045;
+  }
+
+  .detector-tracker {
+    opacity: 0.37;
+  }
+
+  .detector-silicon > path:first-child {
+    fill: var(--foreground);
+    fill-opacity: 0.018;
+  }
+
+  .detector-silicon-y {
+    stroke: currentColor;
+  }
+
+  .detector-strip {
+    stroke-width: 0.65;
+    opacity: 0.7;
+  }
+
+  .detector-calorimeter {
     opacity: 0.35;
+  }
+
+  .detector-base {
+    fill: var(--foreground);
+    fill-opacity: 0.025;
+  }
+
+  .detector-crystal-right {
+    fill: var(--foreground);
+    fill-opacity: 0.035;
+  }
+
+  .detector-crystal-front {
+    fill: var(--accent);
+    fill-opacity: 0.025;
+  }
+
+  .detector-crystal-top {
+    fill: var(--accent);
+    fill-opacity: 0.045;
+    stroke: currentColor;
   }
 
   .detector-vertex {
@@ -762,6 +857,18 @@
     margin-top: 0;
   }
 
+  .detector-shell,
+  .detector-tracker,
+  .detector-calorimeter {
+    stroke-width: 1;
+    opacity: 0.48;
+  }
+
+  .detector-converter {
+    stroke-width: 1;
+    opacity: 0.58;
+  }
+
   .home-section {
     padding-block: 1.25rem 0.5rem;
   }
@@ -815,6 +922,7 @@
   .detector-far,
   .detector-mid,
   .detector-near,
+  .atlas-model-canvas,
   .article-entry-arrow,
   .hero-primary {
     transition: none;
