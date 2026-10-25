@@ -29,6 +29,14 @@ const homePath = getRelativeLocaleUrl(locale, "");
 ---
 
 <Layout>
+  <link
+    slot="head"
+    rel="preload"
+    href={getAssetPath("fonts/ObservatoryTitle.woff2")}
+    as="font"
+    type="font/woff2"
+    crossorigin
+  />
   <Header />
   <main
     id="main-content"
@@ -39,7 +47,32 @@ const homePath = getRelativeLocaleUrl(locale, "");
     <section id="hero" class="home-hero">
       <HeroParticles />
       <div class="hero-copy">
-        <h1 class="hero-title">测量宇宙<br /><span>思考世界</span></h1>
+        <h1 class="hero-title" data-hero-title data-state="waiting">
+          <span class="hero-title-line">
+            <span class="hero-title-main">测量宇宙</span>
+            <span class="hero-title-trail" aria-hidden="true">测量宇宙</span>
+            <span
+              class="hero-title-trail hero-title-trail--two"
+              aria-hidden="true">测量宇宙</span
+            >
+            <span
+              class="hero-title-trail hero-title-trail--three"
+              aria-hidden="true">测量宇宙</span
+            >
+          </span>
+          <span class="hero-title-line hero-title-line--accent">
+            <span class="hero-title-main">思考世界</span>
+            <span class="hero-title-trail" aria-hidden="true">思考世界</span>
+            <span
+              class="hero-title-trail hero-title-trail--two"
+              aria-hidden="true">思考世界</span
+            >
+            <span
+              class="hero-title-trail hero-title-trail--three"
+              aria-hidden="true">思考世界</span
+            >
+          </span>
+        </h1>
         <p class="hero-description">
           我来自USTC，粒子物理与原子核物理专业，目前正在撰写毕业论文。
         </p>
@@ -129,12 +162,66 @@ const homePath = getRelativeLocaleUrl(locale, "");
 </Layout>
 
 <script>
+  let stopTitleAnimation = () => {};
+
+  function setupHomeTitle() {
+    stopTitleAnimation();
+
+    const title = document.querySelector<HTMLElement>("[data-hero-title]");
+    if (!title) return;
+
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let cancelled = false;
+    let fontTimer = 0;
+
+    const showStaticTitle = () => {
+      title.dataset.state = "static";
+    };
+    const onMotionChange = () => {
+      if (motionQuery.matches) showStaticTitle();
+    };
+
+    if (motionQuery.matches) {
+      showStaticTitle();
+      return;
+    }
+
+    title.dataset.state = "waiting";
+    motionQuery.addEventListener("change", onMotionChange);
+
+    const maxFontWait = new Promise<void>(resolve => {
+      fontTimer = window.setTimeout(resolve, 300);
+    });
+    const fontReady = document.fonts
+      .load('400 1em "Observatory Title"', "测量宇宙思考世界")
+      .catch(() => undefined);
+
+    Promise.race([fontReady, maxFontWait]).then(() => {
+      window.clearTimeout(fontTimer);
+      if (cancelled || !title.isConnected) return;
+      title.dataset.state = motionQuery.matches ? "static" : "ready";
+    });
+
+    stopTitleAnimation = () => {
+      cancelled = true;
+      window.clearTimeout(fontTimer);
+      motionQuery.removeEventListener("change", onMotionChange);
+    };
+  }
+
   document.addEventListener("astro:page-load", () => {
+    setupHomeTitle();
+
     const indexLayout = (document.querySelector("#main-content") as HTMLElement)
       ?.dataset;
     const baseRoot = import.meta.env.BASE_URL.replace(/\/?$/, "/");
     if (indexLayout?.layout) {
       sessionStorage.setItem("backUrl", indexLayout.homePath ?? baseRoot);
     }
+  });
+
+  document.addEventListener("astro:before-swap", () => stopTitleAnimation());
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) setupHomeTitle();
   });
 </script>

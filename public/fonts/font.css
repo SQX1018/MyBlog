@@ -5,3 +5,12 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* Eight-character subset of Smiley Sans v2.0.1; see SmileySans-LICENSE.txt. */
+@font-face {
+  font-family: "Observatory Title";
+  src: url("./ObservatoryTitle.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
