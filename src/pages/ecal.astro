@@ -1,0 +1,128 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import EcalExplorer from "@/components/EcalExplorer.astro";
+import { parts, steps } from "@/data/ecal";
+import { getAssetPath } from "@/utils/withBase";
+import config from "@/config";
+import { getRelativeLocaleUrl } from "astro:i18n";
+import "@/styles/ecal.css";
+const homePath = getRelativeLocaleUrl(
+  Astro.currentLocale ?? config.site.lang,
+  ""
+);
+---
+
+<Layout
+  title={`电磁量能器 · 3D 探索 | ${config.site.title}`}
+  description="旋转、拆解 VLAST-P 电磁量能器的 5×5 晶体阵列，跟随闪烁光了解 APD 与读出电子学。"
+>
+  <Header />
+  <main id="main-content" class="app-layout ecal-page" data-layout="ecal">
+    <nav class="ecal-breadcrumb" aria-label="当前位置">
+      <a href={homePath}>首页</a><span aria-hidden="true">/</span><span
+        >电磁量能器</span
+      >
+    </nav>
+    <div class="ecal-page-heading">
+      <div><h1>电磁量能器</h1><p>从一束闪烁光，到能量的读数。</p></div>
+      <a class="ecal-related" href={getAssetPath("posts/vlast-p项目介绍/")}
+        >了解 VLAST-P <span aria-hidden="true">→</span></a
+      >
+    </div>
+    <EcalExplorer />
+    <p class="ecal-model-caption">
+      VLAST-P 最小化方案 · 25 根 CsI(Tl) 晶体 ·
+      模型按晶体标称尺寸构建，机械与电子学组件为结构示意。
+    </p>
+
+    <section class="ecal-reading" aria-labelledby="ecal-chain-title">
+      <div class="ecal-section-intro">
+        <h2 id="ecal-chain-title">能量怎样被读出？</h2><p>
+          晶体负责把沉积能量转成光，光电器件和电子学接力，把光送入可以记录的信号链。
+        </p>
+      </div>
+      <ol class="ecal-signal-chain">
+        {
+          steps.map((step, index) => (
+            <li>
+              <>
+                <span class="ecal-chain-index">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3>{step.short}</h3>
+                <p>{step.description}</p>
+              </>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="ecal-reference" aria-labelledby="ecal-reference-title">
+      <div class="ecal-section-intro">
+        <h2 id="ecal-reference-title">从结构到信号链</h2><p>
+          研制报告中的装配与读出图，把三维模型里的部件连接到实际设计思路。
+        </p>
+      </div>
+      <div class="ecal-reference-grid">
+        <figure>
+          <div class="ecal-reference-image ecal-reference-assembly">
+            <img
+              src={getAssetPath("images/ecal/assembly-reference.png")}
+              alt="初步方案中的量能器装配体、APD 阵列及读出组件"
+              width="505"
+              height="755"
+              loading="lazy"
+            />
+          </div><figcaption>
+            初步方案的装配结构与 APD 阵列。图中为 6×6 阵列；交互模型采用 5×5
+            最小化方案。
+          </figcaption>
+        </figure>
+        <div class="ecal-readout-column">
+          <figure>
+            <div class="ecal-reference-image">
+              <img
+                src={getAssetPath("images/ecal/readout-reference.png")}
+                alt="APD、FAM 和 FEE 的双增益读出电子学框图"
+                width="910"
+                height="550"
+                loading="lazy"
+              />
+            </div><figcaption>
+              APD 底部读出，经 FAM 模拟处理，再由 FEE 完成双增益数字化。
+            </figcaption>
+          </figure><div class="ecal-reference-text">
+            <h3>两种阵列，同一条读出思路</h3><p>
+              最小化方案将晶体从 50 × 50 × 200 mm 调整为 60 × 60 × 150
+              mm，阵列从 6×6 改为 5×5。晶体阵列的标称横向尺寸仍为 300 × 300
+              mm，厚度减少到 150 mm。
+            </p><p>
+              浏览模型时，可以先展开结构，再选择底部的 APD、FAM 和侧面的
+              FEE，沿着读出方向观察各部分的位置关系。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <details class="ecal-static-parts">
+      <summary>部件说明</summary><dl>
+        {
+          parts.map(part => (
+            <div>
+              <>
+                <dt>{part.name}</dt>
+                <dd>
+                  {part.description} {part.detail}
+                </dd>
+              </>
+            </div>
+          ))
+        }
+      </dl>
+    </details>
+  </main>
+  <Footer />
+</Layout>
