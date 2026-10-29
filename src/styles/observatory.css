@@ -29,6 +29,7 @@
 
   .site-brand {
     display: inline-flex;
+    min-width: 0;
     align-items: center;
     gap: 0.75rem;
     color: var(--foreground);
@@ -68,6 +69,7 @@
 
   .brand-copy {
     display: flex;
+    min-width: 0;
     flex-direction: column;
     gap: 0.2rem;
     line-height: 1.15;
@@ -124,7 +126,7 @@
     z-index: 0;
     display: grid;
     min-height: 30rem;
-    grid-template-columns: minmax(0, 0.85fr) minmax(28rem, 1.15fr);
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     align-items: center;
     gap: 1rem;
     border-bottom: 1px solid var(--border);
@@ -195,7 +197,8 @@
     width: max-content;
     max-width: 100%;
     color: var(--foreground);
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
 
   .hero-title-line--accent {
@@ -290,18 +293,30 @@
   }
 
   .hero-description {
-    max-width: 27rem;
+    max-width: 30rem;
     margin-top: 1.25rem;
     color: var(--muted-foreground);
     font-size: 0.9375rem;
     line-height: 1.9;
   }
 
+  .hero-description p {
+    text-wrap: balance;
+  }
+
+  .hero-description p + p {
+    margin-top: 0.4rem;
+  }
+
+  .hero-identity {
+    color: var(--foreground);
+  }
+
   .hero-actions {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-top: 2rem;
+    margin-top: 1.5rem;
   }
 
   .hero-primary {
@@ -760,25 +775,110 @@
   .app-prose table {
     font-size: 0.9375rem;
   }
+
+  .article-toc {
+    margin-top: 1.75rem;
+    border-block: 1px solid var(--border);
+    font-size: 0.9375rem;
+  }
+
+  .article-toc summary {
+    min-height: 2.75rem;
+    padding-block: 0.65rem;
+    cursor: pointer;
+  }
+
+  .article-toc summary::marker {
+    color: var(--accent);
+  }
+
+  .article-toc summary:focus-visible {
+    outline: 2px dashed var(--accent);
+    outline-offset: 3px;
+  }
+
+  .article-toc summary span {
+    margin-inline-start: 0.75rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+
+  .article-toc nav {
+    padding-bottom: 0.75rem;
+  }
+
+  .article-toc ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .article-toc a {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    padding: 0.45rem 0.25rem;
+    color: var(--foreground);
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    text-underline-offset: 0.25em;
+  }
+
+  .article-toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .article-toc .toc-entry--nested {
+    padding-inline-start: 1.25rem;
+  }
+
+  .article-toc .toc-entry--nested a {
+    color: var(--muted-foreground);
+  }
+
+  .image-preview-frame {
+    display: block;
+    margin-block: 2rem;
+  }
+
+  .image-preview-frame img {
+    margin-block: 0;
+  }
+
+  .image-zoom-hint {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    text-align: end;
+  }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 1023px) {
   .home-hero {
     min-height: auto;
-    grid-template-columns: 1fr;
-    padding-block: 2rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 1.5rem 1rem;
   }
 
   .hero-copy {
     text-align: center;
   }
 
+  .hero-description {
+    margin-inline: auto;
+  }
+
   .hero-actions {
     justify-content: center;
+    margin-top: 1.25rem;
   }
 
   .thought-atlas {
-    width: min(100%, 25rem);
+    width: min(100%, 18.5rem);
     justify-self: center;
     margin-top: 0.5rem;
   }
@@ -798,8 +898,14 @@
     padding-block: 0.75rem;
   }
 
+  .site-header #menu-btn {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
   .site-header nav {
     width: auto;
+    flex: none;
   }
 
   .site-header #menu-items {
@@ -813,6 +919,7 @@
 
   .site-brand {
     gap: 0.55rem;
+    white-space: normal;
   }
 
   .brand-mark {
@@ -826,6 +933,7 @@
 
   .brand-copy > span {
     font-size: 0.85rem;
+    overflow-wrap: anywhere;
   }
 
   .brand-copy small {
@@ -851,12 +959,12 @@
 
   .hero-primary,
   .hero-rss {
-    min-height: 2.5rem;
-    height: 2.5rem;
+    min-height: 2.75rem;
+    height: auto;
   }
 
   .thought-atlas {
-    width: 17rem;
+    width: min(100%, 16.5rem);
     margin-top: 0;
   }
 
