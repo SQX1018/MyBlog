@@ -1,0 +1,74 @@
+---
+import { getAssetPath } from "@/utils/withBase";
+---
+
+<dialog
+  class="ecal-image-dialog"
+  aria-labelledby="ecal-image-title"
+  data-ecal-image-dialog
+>
+  <header>
+    <h2 id="ecal-image-title" data-image-title>结构参考图</h2>
+    <button type="button" data-image-close autofocus aria-label="关闭大图"
+      >关闭 <svg viewBox="0 0 24 24" aria-hidden="true"
+        ><path d="m6 6 12 12M18 6 6 18"></path></svg
+      ></button
+    >
+  </header>
+  <div class="ecal-image-controls" aria-label="图片缩放">
+    <button type="button" data-image-zoom="out" aria-label="缩小图片"
+      ><svg viewBox="0 0 24 24" aria-hidden="true"
+        ><path d="M5 12h14"></path></svg
+      ></button
+    >
+    <output data-image-scale aria-live="polite">100%</output>
+    <button type="button" data-image-zoom="in" aria-label="放大图片"
+      ><svg viewBox="0 0 24 24" aria-hidden="true"
+        ><path d="M5 12h14M12 5v14"></path></svg
+      ></button
+    >
+    <button type="button" data-image-fit>适应窗口</button>
+    <span>拖动查看 · 双指缩放</span>
+  </div>
+  <div
+    class="ecal-image-viewport"
+    data-image-viewport
+    tabindex="0"
+    aria-label="大图，放大后可拖动或使用方向键查看"
+  >
+    <img
+      data-image-full
+      src={getAssetPath("images/ecal/readout-reference.png")}
+      alt="APD、FAM 和 FEE 的双增益读出电子学框图"
+      draggable="false"
+    />
+  </div>
+</dialog>
+
+<script>
+  import { mountEcalImages } from "@/scripts/ecal-images";
+  let dialog: HTMLDialogElement | null = null;
+  let dispose = () => {};
+  function setup() {
+    const next = document.querySelector<HTMLDialogElement>(
+      "[data-ecal-image-dialog]"
+    );
+    if (dialog === next) return;
+    dispose();
+    dialog = next;
+    dispose = dialog ? mountEcalImages(dialog) : () => {};
+  }
+  setup();
+  document.addEventListener("astro:page-load", setup);
+  document.addEventListener("astro:before-swap", () => {
+    dispose();
+    dialog = null;
+  });
+  window.addEventListener("pagehide", () => {
+    dispose();
+    dialog = null;
+  });
+  window.addEventListener("pageshow", event => {
+    if (event.persisted) setup();
+  });
+</script>

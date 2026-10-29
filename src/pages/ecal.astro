@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import EcalExplorer from "@/components/EcalExplorer.astro";
+import EcalReferenceViewer from "@/components/EcalReferenceViewer.astro";
 import { parts, steps } from "@/data/ecal";
 import { getAssetPath } from "@/utils/withBase";
 import config from "@/config";
@@ -68,7 +69,13 @@ const homePath = getRelativeLocaleUrl(
       </div>
       <div class="ecal-reference-grid">
         <figure>
-          <div class="ecal-reference-image ecal-reference-assembly">
+          <a
+            class="ecal-reference-image ecal-reference-assembly"
+            href={getAssetPath("images/ecal/assembly-reference.png")}
+            data-reference-image
+            data-image-title="装配结构与 APD 阵列"
+            aria-label="查看装配结构与 APD 阵列大图"
+          >
             <img
               src={getAssetPath("images/ecal/assembly-reference.png")}
               alt="初步方案中的量能器装配体、APD 阵列及读出组件"
@@ -76,14 +83,25 @@ const homePath = getRelativeLocaleUrl(
               height="755"
               loading="lazy"
             />
-          </div><figcaption>
+            <span class="ecal-image-affordance"
+              >查看大图 <svg viewBox="0 0 24 24" aria-hidden="true"
+                ><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"></path></svg
+              ></span
+            >
+          </a><figcaption>
             初步方案的装配结构与 APD 阵列。图中为 6×6 阵列；交互模型采用 5×5
             最小化方案。
           </figcaption>
         </figure>
         <div class="ecal-readout-column">
           <figure>
-            <div class="ecal-reference-image">
+            <a
+              class="ecal-reference-image"
+              href={getAssetPath("images/ecal/readout-reference.png")}
+              data-reference-image
+              data-image-title="APD、FAM 与 FEE 读出框图"
+              aria-label="查看 APD、FAM 与 FEE 读出框图大图"
+            >
               <img
                 src={getAssetPath("images/ecal/readout-reference.png")}
                 alt="APD、FAM 和 FEE 的双增益读出电子学框图"
@@ -91,7 +109,13 @@ const homePath = getRelativeLocaleUrl(
                 height="550"
                 loading="lazy"
               />
-            </div><figcaption>
+              <span class="ecal-image-affordance"
+                >查看大图 <svg viewBox="0 0 24 24" aria-hidden="true"
+                  ><path d="M9 4H4v5m11-5h5v5h-5M4 15v5h5m11-5v5h-5"
+                  ></path></svg
+                ></span
+              >
+            </a><figcaption>
               APD 底部读出，经 FAM 模拟处理，再由 FEE 完成双增益数字化。
             </figcaption>
           </figure><div class="ecal-reference-text">
@@ -124,5 +148,6 @@ const homePath = getRelativeLocaleUrl(
       </dl>
     </details>
   </main>
+  <EcalReferenceViewer />
   <Footer />
 </Layout>

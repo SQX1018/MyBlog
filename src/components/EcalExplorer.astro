@@ -12,152 +12,7 @@ const polygon = (points: number[][]) =>
   data-state="loading"
   data-mode="structure"
 >
-  <div class="ecal-stage">
-    <div class="ecal-stage-heading" aria-hidden="true">
-      <span>CsI(Tl) <span class="ecal-stage-slash">/</span> 5 × 5</span>
-      <span>60 × 60 × 150 mm</span>
-    </div>
-    <p class="ecal-active-step" data-active-step aria-live="polite">
-      1 / 4 · 入射与能量沉积
-    </p>
-    <canvas
-      data-ecal-canvas
-      tabindex="0"
-      aria-label="电磁量能器三维模型。拖动旋转，滚轮或双指缩放；聚焦后可用方向键旋转，加减键缩放。"
-      aria-describedby="ecal-gesture-hint"></canvas>
-    <div class="ecal-fallback">
-      <svg
-        viewBox="0 0 480 420"
-        role="img"
-        aria-label="5×5 电磁量能器晶体阵列与底部读出结构示意"
-      >
-        <polygon
-          points={polygon([
-            [-165, -45, -165],
-            [165, -45, -165],
-            [165, -45, 165],
-            [-165, -45, 165],
-          ])}
-          fill="var(--muted)"
-          stroke="var(--muted-foreground)"></polygon>
-        {
-          crystals.map(({ row, column }) => {
-            const x = (column - 2) * 60,
-              z = (row - 2) * 60;
-            return (
-              <g stroke="var(--background)" stroke-width="1.5">
-                <polygon
-                  points={polygon([
-                    [x - 29, 0, z + 29],
-                    [x + 29, 0, z + 29],
-                    [x + 29, 150, z + 29],
-                    [x - 29, 150, z + 29],
-                  ])}
-                  fill="#ae9658"
-                />
-                <polygon
-                  points={polygon([
-                    [x + 29, 0, z - 29],
-                    [x + 29, 0, z + 29],
-                    [x + 29, 150, z + 29],
-                    [x + 29, 150, z - 29],
-                  ])}
-                  fill="#8e7945"
-                />
-                <polygon
-                  points={polygon([
-                    [x - 29, 150, z - 29],
-                    [x + 29, 150, z - 29],
-                    [x + 29, 150, z + 29],
-                    [x - 29, 150, z + 29],
-                  ])}
-                  fill="#e8d6a0"
-                />
-              </g>
-            );
-          })
-        }
-        <text
-          x="240"
-          y="360"
-          text-anchor="middle"
-          fill="var(--foreground)"
-          font-size="16">25 根 CsI(Tl) 晶体 · 底部 APD 读出</text
-        >
-      </svg>
-      <p class="ecal-stage-status" data-render-status role="status">
-        正在准备交互视图…
-      </p>
-      <noscript
-        ><p class="ecal-noscript">
-          当前显示静态结构示意。启用 JavaScript 后可旋转、拆解和播放演示。
-        </p></noscript
-      >
-    </div>
-    <div class="ecal-model-labels" aria-hidden="true">
-      <span data-model-label="crystals">CsI(Tl)</span><span
-        data-model-label="apd">APD</span
-      ><span data-model-label="fam">FAM</span><span data-model-label="fee"
-        >FEE</span
-      >
-    </div>
-    <div class="ecal-camera-tools" aria-label="模型视角">
-      <button
-        type="button"
-        data-camera="left"
-        disabled
-        aria-label="向左旋转模型"
-        title="向左旋转"
-        ><svg viewBox="0 0 24 24" aria-hidden="true"
-          ><path d="M8 4 4 8l4 4M4 8h10a6 6 0 0 1 0 12h-2"></path></svg
-        ></button
-      >
-      <button
-        type="button"
-        data-camera="right"
-        disabled
-        aria-label="向右旋转模型"
-        title="向右旋转"
-        ><svg viewBox="0 0 24 24" aria-hidden="true"
-          ><path d="m16 4 4 4-4 4m4-4H10a6 6 0 0 0 0 12h2"></path></svg
-        ></button
-      >
-      <span class="ecal-tool-divider"></span>
-      <button
-        type="button"
-        data-camera="in"
-        disabled
-        aria-label="放大模型"
-        title="放大"
-        ><svg viewBox="0 0 24 24" aria-hidden="true"
-          ><path d="M5 12h14M12 5v14"></path></svg
-        ></button
-      >
-      <button
-        type="button"
-        data-camera="out"
-        disabled
-        aria-label="缩小模型"
-        title="缩小"
-        ><svg viewBox="0 0 24 24" aria-hidden="true"
-          ><path d="M5 12h14"></path></svg
-        ></button
-      >
-      <button type="button" data-reset disabled class="ecal-reset">复位</button>
-      <button
-        type="button"
-        data-stage-play
-        disabled
-        class="ecal-stage-play"
-        aria-label="播放或暂停原理演示">播放</button
-      >
-    </div>
-    <p id="ecal-gesture-hint" class="ecal-gesture-hint">
-      拖动旋转 · 滚轮 / 双指缩放 · 点击部件查看
-    </p>
-  </div>
-
-  <aside class="ecal-inspector" aria-label="探索与演示控制">
+  <div class="ecal-workbench-bar">
     <div class="ecal-mode-switch" aria-label="查看模式">
       <button
         type="button"
@@ -172,11 +27,197 @@ const polygon = (points: number[][]) =>
         disabled>原理演示</button
       >
     </div>
+    <select data-view-preset aria-label="观察视角" disabled>
+      <option value="overall">整体视角</option>
+      <option value="readout">底部读出</option>
+      <option value="crystal">单根晶体</option>
+    </select>
+  </div>
+  <div class="ecal-visual">
+    <div class="ecal-stage">
+      <div class="ecal-stage-heading" aria-hidden="true">
+        <span>CsI(Tl) <span class="ecal-stage-slash">/</span> 5 × 5</span>
+        <span>单根晶体 · 60 × 60 × 150 mm</span>
+      </div>
+      <p class="ecal-active-step" data-active-step aria-live="polite">
+        1 / 4 · 入射与能量沉积
+      </p>
+      <canvas
+        data-ecal-canvas
+        tabindex="0"
+        aria-label="电磁量能器三维模型。拖动旋转，滚轮或双指缩放；聚焦后可用方向键旋转，加减键缩放。"
+        aria-describedby="ecal-gesture-hint"></canvas>
+      <div class="ecal-fallback">
+        <svg
+          viewBox="0 0 480 420"
+          role="img"
+          aria-label="5×5 电磁量能器晶体阵列与底部读出结构示意"
+        >
+          <polygon
+            points={polygon([
+              [-165, -45, -165],
+              [165, -45, -165],
+              [165, -45, 165],
+              [-165, -45, 165],
+            ])}
+            fill="var(--muted)"
+            stroke="var(--muted-foreground)"></polygon>
+          {
+            crystals.map(({ row, column }) => {
+              const x = (column - 2) * 60,
+                z = (row - 2) * 60;
+              return (
+                <g stroke="var(--background)" stroke-width="1.5">
+                  <polygon
+                    points={polygon([
+                      [x - 29, 0, z + 29],
+                      [x + 29, 0, z + 29],
+                      [x + 29, 150, z + 29],
+                      [x - 29, 150, z + 29],
+                    ])}
+                    fill="#ae9658"
+                  />
+                  <polygon
+                    points={polygon([
+                      [x + 29, 0, z - 29],
+                      [x + 29, 0, z + 29],
+                      [x + 29, 150, z + 29],
+                      [x + 29, 150, z - 29],
+                    ])}
+                    fill="#8e7945"
+                  />
+                  <polygon
+                    points={polygon([
+                      [x - 29, 150, z - 29],
+                      [x + 29, 150, z - 29],
+                      [x + 29, 150, z + 29],
+                      [x - 29, 150, z + 29],
+                    ])}
+                    fill="#e8d6a0"
+                  />
+                </g>
+              );
+            })
+          }
+          <text
+            x="240"
+            y="360"
+            text-anchor="middle"
+            fill="var(--foreground)"
+            font-size="16">25 根 CsI(Tl) 晶体 · 底部 APD 读出</text
+          >
+        </svg>
+        <p class="ecal-stage-status" data-render-status role="status">
+          正在准备交互视图…
+        </p>
+        <noscript
+          ><p class="ecal-noscript">
+            当前显示静态结构示意。启用 JavaScript 后可旋转、拆解和播放演示。
+          </p></noscript
+        >
+      </div>
+      <div class="ecal-model-labels" aria-hidden="true">
+        <svg class="ecal-label-leaders" data-label-leaders>
+          {
+            parts.map(part => (
+              <g data-leader={part.id} data-hidden="true">
+                <>
+                  <line />
+                  <circle r="2.5" />
+                </>
+              </g>
+            ))
+          }
+        </svg>
+        <span data-model-label="crystals">CsI(Tl)</span><span
+          data-model-label="apd">APD</span
+        ><span data-model-label="fam">FAM</span><span data-model-label="fee"
+          >FEE</span
+        ><span data-model-label="support">支撑结构</span>
+      </div>
+    </div>
+    <div class="ecal-camera-row">
+      <div class="ecal-camera-tools" aria-label="模型视角">
+        <button
+          type="button"
+          data-camera="left"
+          disabled
+          aria-label="向左旋转模型"
+          title="向左旋转"
+          ><svg viewBox="0 0 24 24" aria-hidden="true"
+            ><path d="M8 4 4 8l4 4M4 8h10a6 6 0 0 1 0 12h-2"></path></svg
+          ></button
+        >
+        <button
+          type="button"
+          data-camera="right"
+          disabled
+          aria-label="向右旋转模型"
+          title="向右旋转"
+          ><svg viewBox="0 0 24 24" aria-hidden="true"
+            ><path d="m16 4 4 4-4 4m4-4H10a6 6 0 0 0 0 12h2"></path></svg
+          ></button
+        >
+        <span class="ecal-tool-divider"></span>
+        <button
+          type="button"
+          data-camera="in"
+          disabled
+          aria-label="放大模型"
+          title="放大"
+          ><svg viewBox="0 0 24 24" aria-hidden="true"
+            ><path d="M5 12h14M12 5v14"></path></svg
+          ></button
+        >
+        <button
+          type="button"
+          data-camera="out"
+          disabled
+          aria-label="缩小模型"
+          title="缩小"
+          ><svg viewBox="0 0 24 24" aria-hidden="true"
+            ><path d="M5 12h14"></path></svg
+          ></button
+        >
+        <button type="button" data-reset disabled class="ecal-reset"
+          >复位</button
+        >
+        <button
+          type="button"
+          data-stage-play
+          disabled
+          class="ecal-stage-play"
+          aria-label="播放或暂停原理演示">播放</button
+        >
+      </div>
+      <p id="ecal-gesture-hint" class="ecal-gesture-hint">
+        拖动旋转 · 滚轮 / 双指缩放 · 点击部件查看
+      </p>
+    </div>
+    <div class="ecal-selection-summary" aria-live="polite" aria-atomic="true">
+      <div>
+        <h2 data-selection-title>{parts[0].name}</h2>
+        <p data-selection-summary>{parts[0].summary}</p>
+        <div class="ecal-demo-legend" aria-label="动画图例">
+          <span><i class="ecal-light-mark"></i>闪烁光</span><span
+            ><i class="ecal-electric-mark"></i>电信号</span
+          >
+        </div>
+      </div>
+      <button type="button" data-focus-part disabled
+        >查看此层 <svg viewBox="0 0 24 24" aria-hidden="true"
+          ><path d="M6 18 18 6M6 6h12v12"></path></svg
+        ></button
+      >
+    </div>
+  </div>
 
+  <aside class="ecal-inspector" aria-label="探索与演示控制">
     <div data-structure-panel>
+      <p class="ecal-start-hint">先分层拆解，再选择想看的部件。</p>
       <div class="ecal-explode-control">
         <label for="ecal-explode"
-          >拆解结构 <output for="ecal-explode" data-explode-value>0%</output
+          >分层拆解 <output for="ecal-explode" data-explode-value>0%</output
           ></label
         >
         <input
@@ -226,12 +267,16 @@ const polygon = (points: number[][]) =>
             ))
           }
         </div>
+        <label class="ecal-spread-control"
+          ><input type="checkbox" data-spread disabled />拉开晶体间距</label
+        >
       </details>
-      <div class="ecal-part-detail" aria-live="polite" aria-atomic="true">
+      <details class="ecal-part-detail">
+        <summary>部件详解与尺寸</summary>
         <h2 data-part-title>{parts[0].name}</h2>
         <p data-part-description>{parts[0].description}</p>
         <p class="ecal-detail-note" data-part-detail>{parts[0].detail}</p>
-      </div>
+      </details>
     </div>
 
     <div data-demo-panel hidden>
