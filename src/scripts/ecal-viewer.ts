@@ -4,6 +4,8 @@ import {
   BoxGeometry,
   BufferGeometry,
   Color,
+  CanvasTexture,
+  ConeGeometry,
   CylinderGeometry,
   DirectionalLight,
   EdgesGeometry,
@@ -15,6 +17,7 @@ import {
   MeshBasicMaterial,
   MeshStandardMaterial,
   PerspectiveCamera,
+  PlaneGeometry,
   Raycaster,
   Scene,
   SphereGeometry,
@@ -25,6 +28,7 @@ import {
   type Material,
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { ECAL, crystals, parts, steps, type PartId } from "@/data/ecal";
 
 const STEP_DURATION = 3200;
@@ -49,6 +53,12 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
   const abort = new AbortController();
   const signal = abort.signal;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const compactViewport = window.matchMedia("(max-width: 767px)");
+  const partDetailPanel =
+    root.querySelector<HTMLDetailsElement>(".ecal-part-detail")!;
+  const syncDetailPanel = () => {
+    partDetailPanel.open = !compactViewport.matches;
+  };
   let renderer: WebGLRenderer | undefined;
   let controls: OrbitControls | undefined;
   let resizeObserver: ResizeObserver | undefined;
@@ -63,6 +73,12 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
   let selected: PartId = "crystals";
   let selectedCrystal: string | undefined;
   let exploded = 0;
+  let spread = false;
+  let isolated = false;
+  let isolatedCrystal = "C13";
+  let hasSelection = false;
+  let cameraTransition:
+    { from: Vector3; to: Vector3; start: number } | undefined;
   let stepIndex = 0;
   let demoTime = 0;
   let playing = false;
@@ -70,6 +86,7 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
   const scene = new Scene();
   const geometries = new Set<BufferGeometry>();
   const materials = new Set<Material>();
+  const textures = new Set<CanvasTexture>();
   const cells: Cell[] = [];
   const surfaces: Surface[] = [];
   const selectable: Mesh[] = [];
@@ -80,6 +97,9 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
   const explodeInput = root.querySelector<HTMLInputElement>("[data-explode]")!;
   const status = root.querySelector<HTMLElement>("[data-render-status]")!;
   const labels = [...root.querySelectorAll<HTMLElement>("[data-model-label]")];
+  const preset = root.querySelector<HTMLSelectElement>("[data-view-preset]")!;
+  const supportFrame = new Group();
+  let contactShadow: Mesh | undefined;
   const initialTarget = new Vector3(0, 35, 0);
   const camera = new PerspectiveCamera(40, 1, 1, 5000);
   camera.position.set(540, 440, 610);
@@ -99,8 +119,10 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     themeObserver?.disconnect();
     intersectionObserver?.disconnect();
     reduceMotion.removeEventListener("change", onReducedMotion);
+    compactViewport.removeEventListener("change", syncDetailPanel);
     geometries.forEach(geometry => geometry.dispose());
     materials.forEach(material => material.dispose());
+    textures.forEach(texture => texture.dispose());
     renderer?.dispose();
     renderer?.forceContextLoss();
     root.dataset.playing = "false";
@@ -111,7 +133,9 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     root.dataset.state = "fallback";
     status.textContent = message;
     root
-      .querySelectorAll<HTMLButtonElement | HTMLInputElement>("button,input")
+      .querySelectorAll<
+        HTMLButtonElement | HTMLInputElement | HTMLSelectElement
+      >("button,input,select")
       .forEach(element => {
         element.disabled = true;
       });
@@ -134,11 +158,32 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     return material;
   }
   const boxGeometry = ownGeometry(new BoxGeometry(1, 1, 1));
+  const crystalGeometry = ownGeometry(
+    new RoundedBoxGeometry(
+      ECAL.crystal.width,
+      ECAL.crystal.height,
+      ECAL.crystal.depth,
+      2,
+      0.65
+    )
+  );
   const boxEdges = ownGeometry(new EdgesGeometry(boxGeometry));
   const boltGeometry = ownGeometry(new CylinderGeometry(3.4, 3.4, 1, 12));
   const outline = ownMaterial(
     new LineBasicMaterial({ color: 0x555c63, transparent: true, opacity: 0.24 })
   );
+  const selectionMaterial = ownMaterial(
+    new LineBasicMaterial({
+      color: 0x2563eb,
+      depthTest: true,
+      transparent: true,
+      opacity: 0.85,
+    })
+  );
+  const selectionOutline = new LineSegments(boxEdges, selectionMaterial);
+  selectionOutline.renderOrder = 9;
+  selectionOutline.visible = false;
+  scene.add(selectionOutline);
   const baseColors: Record<PartId, number> = {
     crystals: 0xd9c58a,
     apd: 0x866793,
@@ -159,13 +204,15 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     const material = ownMaterial(
       new MeshStandardMaterial({
         color,
-        roughness: part === "crystals" ? 0.32 : 0.65,
-        metalness: part === "support" ? 0.4 : 0.08,
+        roughness:
+          part === "crystals" ? 0.27 : part === "support" ? 0.32 : 0.78,
+        metalness: part === "support" ? 0.55 : 0.04,
       })
     );
-    const mesh = new Mesh(boxGeometry, material);
+    const bevelled = part === "crystals" && size[1] === ECAL.crystal.height;
+    const mesh = new Mesh(bevelled ? crystalGeometry : boxGeometry, material);
     mesh.position.set(...position);
-    mesh.scale.set(...size);
+    if (!bevelled) mesh.scale.set(...size);
     mesh.userData = { part, crystal };
     parent.add(mesh);
     surfaces.push({
@@ -187,9 +234,9 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     Object.values(groups).forEach(group => scene.add(group));
     crystals.forEach(({ row, column, id }) => {
       for (const [part, baseY, lift] of [
-        ["crystals", 0, 65],
-        ["apd", 0, -25],
-        ["fam", 0, -70],
+        ["crystals", 0, 100],
+        ["apd", 0, 10],
+        ["fam", 0, -60],
       ] as const) {
         const cell = new Group();
         groups[part].add(cell);
@@ -202,7 +249,7 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
             [0, 75, 0],
             baseColors[part],
             id,
-            true
+            false
           );
           // A fine inset on the top face makes the packing visible without changing pitch.
           box(cell, part, [57.5, 0.2, 57.5], [0, 150.15, 0], 0xf0dfae, id);
@@ -241,13 +288,14 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
       undefined,
       true
     );
+    groups.support.add(supportFrame);
     for (const z of [-159, 159])
-      box(groups.support, "support", [326, 5, 8], [0, 154, z]);
+      box(supportFrame, "support", [326, 5, 8], [0, 154, z]);
     for (const x of [-159, 159])
-      box(groups.support, "support", [8, 5, 326], [x, 154, 0]);
+      box(supportFrame, "support", [8, 5, 326], [x, 154, 0]);
     for (const x of [-159, 159]) {
       for (const z of [-159, 159]) {
-        box(groups.support, "support", [5, 225, 5], [x, 38, z]);
+        box(supportFrame, "support", [5, 225, 5], [x, 38, z]);
         const bolt = new Mesh(
           boltGeometry,
           ownMaterial(
@@ -260,14 +308,41 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
         );
         bolt.position.set(x, 158, z);
         bolt.scale.y = 4;
-        groups.support.add(bolt);
+        supportFrame.add(bolt);
       }
     }
-    scene.add(new AmbientLight(0xffffff, 2));
-    const key = new DirectionalLight(0xfff7e4, 3.1);
+    // A generated contact shadow grounds the assembly without a shadow-map render pass.
+    const shadowCanvas = document.createElement("canvas");
+    shadowCanvas.width = shadowCanvas.height = 128;
+    const context = shadowCanvas.getContext("2d");
+    if (context) {
+      const gradient = context.createRadialGradient(64, 64, 12, 64, 64, 64);
+      gradient.addColorStop(0, "rgba(0,0,0,0.3)");
+      gradient.addColorStop(1, "rgba(0,0,0,0)");
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 128, 128);
+      const texture = new CanvasTexture(shadowCanvas);
+      textures.add(texture);
+      contactShadow = new Mesh(
+        ownGeometry(new PlaneGeometry(440, 440)),
+        ownMaterial(
+          new MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            depthWrite: false,
+            opacity: 0.65,
+          })
+        )
+      );
+      contactShadow.rotation.x = -Math.PI / 2;
+      contactShadow.position.y = -83;
+      scene.add(contactShadow);
+    }
+    scene.add(new AmbientLight(0xffffff, 1.45));
+    const key = new DirectionalLight(0xfff7e4, 2.65);
     key.position.set(200, 550, 300);
     scene.add(key);
-    const fill = new DirectionalLight(0xb9d9ff, 1.3);
+    const fill = new DirectionalLight(0xb9d9ff, 1.1);
     fill.position.set(-300, 120, -200);
     scene.add(fill);
   }
@@ -289,6 +364,7 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     new MeshBasicMaterial({ color: 0x5daeff })
   );
   const dotGeometry = ownGeometry(new SphereGeometry(2.5, 10, 8));
+  const electricGeometry = ownGeometry(new ConeGeometry(2.7, 9, 6));
   const photonRoute: Vector3[] = [];
   const electricalRoute = [
     new Vector3(0, -7, 0),
@@ -418,7 +494,7 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
       signalPath
     );
     for (let index = 0; index < 6; index++) {
-      const dot = new Mesh(dotGeometry, electricMaterial);
+      const dot = new Mesh(electricGeometry, electricMaterial);
       dot.material.depthTest = false;
       dot.renderOrder = 6;
       signalPath.add(dot);
@@ -429,7 +505,13 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
   function updateMaterials() {
     const styles = getComputedStyle(root);
     const accent = new Color(styles.getPropertyValue("--accent").trim());
+    selectionMaterial.color.copy(accent);
+    for (const part of parts)
+      groups[part.id].visible =
+        !isolated || ["crystals", "apd", "fam"].includes(part.id);
+    if (contactShadow) contactShadow.visible = !isolated;
     for (const surface of surfaces) {
+      surface.mesh.visible = !isolated || surface.crystal === isolatedCrystal;
       const wasTransparent = surface.material.transparent;
       const focused =
         mode === "structure" &&
@@ -440,9 +522,7 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
       surface.material.emissive.setHex(0x000000);
       surface.material.emissiveIntensity = 0;
       if (focused) {
-        surface.material.color.lerp(accent, 0.12);
-        surface.material.emissive.copy(accent);
-        surface.material.emissiveIntensity = 0.12;
+        surface.material.color.lerp(accent, hasSelection ? 0.14 : 0.02);
       }
       if (mode === "demo") {
         const litCrystal =
@@ -487,28 +567,34 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     }
     outline.color.set(styles.getPropertyValue("--foreground").trim());
     outline.opacity =
-      document.documentElement.dataset.theme === "dark" ? 0.26 : 0.19;
+      mode === "demo"
+        ? 0.1
+        : document.documentElement.dataset.theme === "dark"
+          ? 0.22
+          : 0.14;
     incomingDotMaterial.color.copy(accent);
     electricMaterial.color.copy(accent);
   }
 
   function applyExplosion(value: number) {
     exploded = Math.min(1, Math.max(0, value));
-    const pitch = ECAL.crystal.width + exploded * 18;
-    cells.forEach(cell =>
+    cells.forEach(cell => {
+      const pitch = ECAL.crystal.width + (spread && cell.lift === 100 ? 18 : 0);
       cell.object.position.set(
         (cell.column - 2) * pitch,
         cell.baseY + cell.lift * exploded,
         (cell.row - 2) * pitch
-      )
-    );
-    groups.fee.position.set(0, -80 * exploded, 35 * exploded);
-    groups.support.position.y = -125 * exploded;
-    // Move the top frame with the base; its open shape keeps the array accessible.
+      );
+    });
+    groups.fee.position.set(0, -55 * exploded, 45 * exploded);
+    groups.support.position.y = -95 * exploded;
+    supportFrame.position.y = 240 * exploded;
+    if (contactShadow) contactShadow.position.y = -83 - 95 * exploded;
     explodeInput.value = String(Math.round(exploded * 100));
     root.querySelector<HTMLOutputElement>("[data-explode-value]")!.value =
       `${Math.round(exploded * 100)}%`;
     root.dataset.exploded = String(exploded);
+    root.dataset.spread = String(spread);
     fitCamera();
     requestRender();
   }
@@ -525,7 +611,12 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     camera.updateProjectionMatrix();
     camera.updateMatrixWorld(true);
     const bounds = new Box3();
-    Object.values(groups).forEach(group => bounds.expandByObject(group));
+    Object.values(groups).forEach(group => {
+      if (group.visible)
+        group.traverseVisible(object => {
+          if (object instanceof Mesh) bounds.expandByObject(object);
+        });
+    });
     if (mode === "demo") bounds.expandByObject(incoming);
     if (bounds.isEmpty()) return;
     const corners: Vector3[] = [];
@@ -537,10 +628,9 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     const sideLimit = Math.max(0.1, 1 - 48 / rect.width);
     const topLimit = Math.max(
       0.1,
-      1 - (mode === "demo" ? 160 : 116) / rect.height
+      1 - (mode === "demo" ? 160 : 88) / rect.height
     );
-    const toolbar = root.querySelector<HTMLElement>(".ecal-camera-tools")!;
-    const bottomPadding = Math.max(112, toolbar.offsetHeight + 64);
+    const bottomPadding = 24;
     const bottomLimit = Math.max(0.1, 1 - (2 * bottomPadding) / rect.height);
     const minX = Math.min(...projected.map(point => point.x));
     const maxX = Math.max(...projected.map(point => point.x));
@@ -549,7 +639,7 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     camera.zoom = Math.max(
       0.2,
       Math.min(
-        1,
+        isolated ? 4 : 1.5,
         (2 * sideLimit) / (maxX - minX),
         (topLimit + bottomLimit) / (maxY - minY)
       )
@@ -585,8 +675,32 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     });
   }
 
-  function selectPart(part: PartId, crystal?: string) {
+  function updateSummary() {
+    const data = parts.find(item => item.id === selected)!;
+    root.querySelector<HTMLElement>("[data-selection-title]")!.textContent =
+      mode === "demo"
+        ? steps[stepIndex].title
+        : selectedCrystal
+          ? `${selectedCrystal} · ${data.name}`
+          : data.name;
+    root.querySelector<HTMLElement>("[data-selection-summary]")!.textContent =
+      mode === "demo"
+        ? steps[stepIndex].summary
+        : selectedCrystal
+          ? `第 ${crystals.find(item => item.id === selectedCrystal)!.row + 1} 行，第 ${crystals.find(item => item.id === selectedCrystal)!.column + 1} 列 · 单根 60 × 60 × 150 mm`
+          : data.summary;
+  }
+
+  function selectPart(part: PartId, crystal?: string, explicit = true) {
+    const wasIsolated = isolated;
     selected = part;
+    hasSelection = explicit;
+    if (crystal) isolatedCrystal = crystal;
+    if (isolated && ["fee", "support"].includes(part)) {
+      isolated = false;
+      preset.value = "overall";
+      root.dataset.isolated = "false";
+    }
     selectedCrystal = part === "crystals" ? crystal : undefined;
     const data = parts.find(item => item.id === part)!;
     root.querySelector<HTMLElement>("[data-part-title]")!.textContent =
@@ -617,8 +731,65 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
       );
     root.dataset.selectedPart = part;
     root.dataset.selectedCrystal = selectedCrystal ?? "";
+    updateSummary();
     updateMaterials();
+    if (isolated || wasIsolated) fitCamera();
     requestRender();
+  }
+
+  function animateCamera(to: Vector3) {
+    cameraTransition = undefined;
+    if (reduceMotion.matches) {
+      camera.position.copy(to);
+      controls?.update();
+      fitCamera();
+    } else
+      cameraTransition = {
+        from: camera.position.clone(),
+        to,
+        start: performance.now(),
+      };
+    requestRender();
+  }
+
+  function focusPart() {
+    if (mode !== "structure") return;
+    if (selected === "crystals" && selectedCrystal) {
+      isolated = true;
+      preset.value = "crystal";
+      updateMaterials();
+      applyExplosion(0.3);
+      animateCamera(new Vector3(420, 290, 500));
+    } else {
+      isolated = false;
+      preset.value =
+        selected === "apd" || selected === "fam" ? "readout" : "overall";
+      updateMaterials();
+      applyExplosion(selected === "crystals" ? 0.45 : 0.85);
+      animateCamera(new Vector3(540, 270, 640));
+    }
+    root.dataset.isolated = String(isolated);
+  }
+
+  function setView(value: string) {
+    if (mode !== "structure") setMode("structure");
+    isolated = value === "crystal";
+    preset.value = value;
+    root.dataset.isolated = String(isolated);
+    if (value === "crystal") {
+      selectPart("crystals", selectedCrystal ?? "C13");
+      applyExplosion(0.3);
+      animateCamera(new Vector3(420, 290, 500));
+    } else if (value === "readout") {
+      selectPart("apd");
+      applyExplosion(0.85);
+      animateCamera(new Vector3(540, 270, 640));
+    } else {
+      selectPart("crystals", undefined, false);
+      applyExplosion(0);
+      animateCamera(new Vector3(540, 440, 610));
+    }
+    updateSummary();
   }
 
   function updatePlayback() {
@@ -668,11 +839,13 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
       else button.removeAttribute("aria-current");
     });
     updateMaterials();
+    updateSummary();
     updatePlayback();
     requestRender();
   }
 
   function setMode(next: "structure" | "demo") {
+    cameraTransition = undefined;
     mode = next;
     playing = false;
     lastTime = 0;
@@ -690,6 +863,12 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
         )
       );
     if (mode === "demo") {
+      isolated = false;
+      spread = false;
+      preset.value = "overall";
+      root.dataset.isolated = "false";
+      root.querySelector<HTMLInputElement>("[data-spread]")!.checked = false;
+      updateMaterials();
       applyExplosion(0);
       demoTime = 0;
       setStep(0);
@@ -698,23 +877,33 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
       updatePlayback();
     }
     demonstration.visible = mode === "demo";
+    updateSummary();
     fitCamera();
     requestRender();
   }
 
   function reset() {
+    cameraTransition = undefined;
+    isolated = false;
+    spread = false;
+    hasSelection = false;
+    preset.value = "overall";
+    root.dataset.isolated = "false";
+    root.querySelector<HTMLInputElement>("[data-spread]")!.checked = false;
+    updateMaterials();
     playing = false;
     demoTime = 0;
     lastTime = 0;
     controls?.reset();
     applyExplosion(0);
-    selectPart("crystals");
+    selectPart("crystals", undefined, false);
     setStep(0);
     requestRender();
   }
 
   function moveCamera(action: string) {
     if (!controls) return;
+    cameraTransition = undefined;
     const offset = camera.position.clone().sub(controls.target);
     const spherical = new Spherical().setFromVector3(offset);
     if (action === "left") spherical.theta -= Math.PI / 12;
@@ -763,39 +952,131 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
       dot.position
         .copy(electricalRoute[segment])
         .lerp(electricalRoute[segment + 1], scaled - segment);
+      dot.quaternion.setFromUnitVectors(
+        new Vector3(0, 1, 0),
+        electricalRoute[segment + 1]
+          .clone()
+          .sub(electricalRoute[segment])
+          .normalize()
+      );
       dot.visible = stepIndex === 3 || fraction < 0.28;
     });
   }
 
-  const labelPoints: Record<string, Vector3> = {
-    crystals: new Vector3(190, 120, 70),
-    apd: new Vector3(190, -7, 100),
-    fam: new Vector3(185, -31, 110),
-    fee: new Vector3(175, -44, 174),
-  };
+  function partBounds(part: PartId, crystal?: string) {
+    const bounds = new Box3();
+    if (!groups[part].visible) return bounds;
+    surfaces.forEach(surface => {
+      if (
+        surface.part === part &&
+        surface.mesh.visible &&
+        (!crystal || surface.crystal === crystal)
+      )
+        bounds.expandByObject(surface.mesh);
+    });
+    return bounds;
+  }
+
+  function positionLabels() {
+    const bounds = canvas.getBoundingClientRect();
+    const activePart = mode === "demo" ? steps[stepIndex].part : selected;
+    const svg = root.querySelector<SVGSVGElement>("[data-label-leaders]")!;
+    svg.setAttribute("viewBox", `0 0 ${bounds.width} ${bounds.height}`);
+    const candidates: {
+      label: HTMLElement;
+      leader: SVGGElement;
+      x: number;
+      y: number;
+      desired: number;
+    }[] = [];
+    labels.forEach(label => {
+      const part = label.dataset.modelLabel as PartId;
+      const leader = root.querySelector<SVGGElement>(
+        `[data-leader="${part}"]`
+      )!;
+      const box = partBounds(
+        part,
+        part === "crystals" ? selectedCrystal : undefined
+      );
+      const hidden =
+        box.isEmpty() ||
+        (part !== activePart &&
+          (isolated || exploded < 0.35 || bounds.width < 600));
+      label.hidden = hidden;
+      leader.dataset.hidden = String(hidden);
+      if (hidden) return;
+      // Anchor the mechanical label on a post, rather than the empty middle of its bounds.
+      const post =
+        part === "support"
+          ? supportFrame.children.find(
+              object =>
+                object instanceof Mesh &&
+                object.position.x > 0 &&
+                object.position.z > 0 &&
+                object.scale.y > 200
+            )
+          : undefined;
+      const vector = (
+        post
+          ? new Box3().setFromObject(post).getCenter(new Vector3())
+          : box.getCenter(new Vector3())
+      ).project(camera);
+      if (vector.z > 1 || Math.abs(vector.x) > 1 || Math.abs(vector.y) > 1) {
+        label.hidden = true;
+        leader.dataset.hidden = "true";
+        return;
+      }
+      label.textContent =
+        part === "crystals"
+          ? (selectedCrystal ?? "CsI(Tl)")
+          : parts.find(item => item.id === part)!.short.split(" ")[0];
+      label.dataset.selected = String(part === activePart);
+      const x = ((vector.x + 1) * bounds.width) / 2;
+      const y = ((1 - vector.y) * bounds.height) / 2;
+      candidates.push({ label, leader, x, y, desired: y - 12 });
+    });
+    candidates.sort((a, b) => a.desired - b.desired);
+    const bottom = bounds.height - 32;
+    let next = 70;
+    const positions = candidates.map(item => {
+      const y = Math.max(next, Math.min(bottom, item.desired));
+      next = y + 28;
+      return y;
+    });
+    for (let index = positions.length - 1; index >= 0; index--)
+      positions[index] = Math.min(
+        positions[index],
+        bottom - (positions.length - 1 - index) * 28
+      );
+    candidates.forEach((item, index) => {
+      const x = bounds.width - item.label.offsetWidth - 12;
+      const y = Math.max(62, positions[index]);
+      item.label.style.transform = `translate(${x}px, ${y}px)`;
+      const line = item.leader.querySelector("line")!;
+      const dot = item.leader.querySelector("circle")!;
+      line.setAttribute("x1", String(item.x));
+      line.setAttribute("y1", String(item.y));
+      line.setAttribute("x2", String(x - 4));
+      line.setAttribute("y2", String(y + item.label.offsetHeight / 2));
+      dot.setAttribute("cx", String(item.x));
+      dot.setAttribute("cy", String(item.y));
+    });
+  }
   function render() {
     if (!renderer || disposed) return;
     updateDemoObjects();
+    scene.updateMatrixWorld(true);
+    const selectedBounds = partBounds(selected, selectedCrystal);
+    selectionOutline.visible =
+      mode === "structure" && hasSelection && !selectedBounds.isEmpty();
+    if (selectionOutline.visible) {
+      selectionOutline.position.copy(selectedBounds.getCenter(new Vector3()));
+      selectionOutline.scale.copy(
+        selectedBounds.getSize(new Vector3()).addScalar(1.8)
+      );
+    }
     renderer.render(scene, camera);
-    const bounds = canvas.getBoundingClientRect();
-    labels.forEach(label => {
-      const part = label.dataset.modelLabel!;
-      const vector = labelPoints[part].clone();
-      if (part === "crystals") vector.y += exploded * 65;
-      if (part === "apd") vector.y -= exploded * 25;
-      if (part === "fam") vector.y -= exploded * 70;
-      if (part === "fee") {
-        vector.y -= exploded * 80;
-        vector.z += exploded * 35;
-      }
-      vector.project(camera);
-      label.hidden =
-        exploded < 0.35 ||
-        Math.abs(vector.x) > 0.9 ||
-        Math.abs(vector.y) > 0.8 ||
-        vector.z > 1;
-      label.style.transform = `translate(${((vector.x + 1) * bounds.width) / 2}px, ${((1 - vector.y) * bounds.height) / 2}px)`;
-    });
+    positionLabels();
     root.dataset.frames = String(Number(root.dataset.frames ?? 0) + 1);
     root.dataset.camera = camera.position
       .toArray()
@@ -809,6 +1090,21 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     if (disposed || !visible) {
       lastTime = 0;
       return;
+    }
+    if (cameraTransition) {
+      const progress = Math.min(
+        1,
+        Math.max(0, (time - cameraTransition.start) / 360)
+      );
+      camera.position.lerpVectors(
+        cameraTransition.from,
+        cameraTransition.to,
+        1 - Math.pow(1 - progress, 4)
+      );
+      controls?.update();
+      fitCamera();
+      dirty = true;
+      if (progress === 1) cameraTransition = undefined;
     }
     if (playing && !reduceMotion.matches) {
       if (lastTime)
@@ -830,7 +1126,8 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
       dirty = true;
     }
     if (dirty) render();
-    if (playing && !frame) frame = requestAnimationFrame(tick);
+    if ((playing || cameraTransition) && !frame)
+      frame = requestAnimationFrame(tick);
   }
 
   function syncVisibility() {
@@ -843,6 +1140,12 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
   }
 
   function onReducedMotion() {
+    if (cameraTransition) {
+      camera.position.copy(cameraTransition.to);
+      cameraTransition = undefined;
+      controls?.update();
+      fitCamera();
+    }
     playing = false;
     lastTime = 0;
     updatePlayback();
@@ -869,13 +1172,18 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     controls.update();
     controls.saveState();
     controls.addEventListener("change", requestRender);
+    controls.addEventListener("start", () => {
+      cameraTransition = undefined;
+    });
     buildModel();
     buildDemonstration();
     applyExplosion(0);
     updateMaterials();
 
     root
-      .querySelectorAll<HTMLButtonElement | HTMLInputElement>("button,input")
+      .querySelectorAll<
+        HTMLButtonElement | HTMLInputElement | HTMLSelectElement
+      >("button,input,select")
       .forEach(element => {
         element.disabled = false;
       });
@@ -891,6 +1199,7 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
           selectPart("crystals", button.dataset.crystal);
         if (button.dataset.camera) moveCamera(button.dataset.camera);
         if (button.hasAttribute("data-reset")) reset();
+        if (button.hasAttribute("data-focus-part")) focusPart();
         if (button.dataset.modeButton)
           setMode(button.dataset.modeButton as "structure" | "demo");
         if (button.dataset.step !== undefined) {
@@ -925,7 +1234,19 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     );
     explodeInput.addEventListener(
       "input",
-      () => applyExplosion(Number(explodeInput.value) / 100),
+      () => {
+        cameraTransition = undefined;
+        applyExplosion(Number(explodeInput.value) / 100);
+      },
+      { signal }
+    );
+    preset.addEventListener("change", () => setView(preset.value), { signal });
+    root.querySelector<HTMLInputElement>("[data-spread]")!.addEventListener(
+      "change",
+      event => {
+        spread = (event.target as HTMLInputElement).checked;
+        applyExplosion(exploded);
+      },
       { signal }
     );
     canvas.addEventListener(
@@ -975,7 +1296,12 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
           -((event.clientY - rect.top) / rect.height) * 2 + 1
         );
         raycaster.setFromCamera(pointer, camera);
-        const hit = raycaster.intersectObjects(selectable, false)[0];
+        const hit = raycaster.intersectObjects(
+          selectable.filter(
+            mesh => mesh.visible && groups[mesh.userData.part as PartId].visible
+          ),
+          false
+        )[0];
         if (hit)
           selectPart(
             hit.object.userData.part as PartId,
@@ -998,6 +1324,8 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     );
     document.addEventListener("visibilitychange", syncVisibility, { signal });
     reduceMotion.addEventListener("change", onReducedMotion);
+    compactViewport.addEventListener("change", syncDetailPanel);
+    syncDetailPanel();
     resizeObserver = new ResizeObserver(() => {
       if (!renderer || disposed) return;
       const bounds = stage.getBoundingClientRect();
@@ -1021,7 +1349,7 @@ export function mountEcalExplorer(root: HTMLElement): () => void {
     });
     intersectionObserver.observe(stage);
     setMode("structure");
-    selectPart("crystals");
+    selectPart("crystals", undefined, false);
     root.dataset.crystalCount = String(crystals.length);
     root.dataset.crystalSize = `${ECAL.crystal.width},${ECAL.crystal.height},${ECAL.crystal.depth}`;
     root.dataset.pixelRatio = String(renderer.getPixelRatio());
