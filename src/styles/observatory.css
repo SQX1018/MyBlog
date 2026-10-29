@@ -147,6 +147,22 @@
     z-index: 1;
   }
 
+  .hero-detector-link {
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    max-width: 36rem;
+    justify-self: end;
+    text-decoration: none;
+    border-radius: 8px;
+  }
+
+  .hero-detector-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
   .home-hero::before {
     position: absolute;
     z-index: -1;
@@ -883,6 +899,11 @@
     margin-top: 0.5rem;
   }
 
+  .hero-detector-link {
+    width: min(100%, 18.5rem);
+    justify-self: center;
+  }
+
   .hero-title {
     font-size: clamp(3rem, 10vw, 4rem);
   }
@@ -966,6 +987,10 @@
   .thought-atlas {
     width: min(100%, 16.5rem);
     margin-top: 0;
+  }
+
+  .hero-detector-link {
+    width: min(100%, 16.5rem);
   }
 
   .detector-shell,

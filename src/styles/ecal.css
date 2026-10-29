@@ -1,0 +1,680 @@
+/* The explorer inherits the blog palette. Materials carry the component colours. */
+.ecal-page {
+  padding-bottom: 3rem;
+}
+.ecal-breadcrumb {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+.ecal-breadcrumb a:hover {
+  color: var(--accent);
+}
+.ecal-page-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+  margin: 1.4rem 0 1.7rem;
+}
+.ecal-page-heading h1 {
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+}
+.ecal-page-heading p {
+  color: var(--muted-foreground);
+  margin-top: 0.6rem;
+}
+.ecal-related {
+  color: var(--accent);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  text-underline-offset: 5px;
+}
+.ecal-related:hover {
+  text-decoration: underline;
+}
+/* 1056px desktop content = flexible stage + 304px inspector; one shared edge. */
+.ecal-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 19rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--background);
+}
+.ecal-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 570px;
+  isolation: isolate;
+  background: var(--node-surface);
+}
+.ecal-stage canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: grab;
+}
+.ecal-stage canvas:active {
+  cursor: grabbing;
+}
+.ecal-active-step {
+  display: none;
+  position: absolute;
+  top: 3.1rem;
+  left: 1.4rem;
+  z-index: 2;
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  pointer-events: none;
+}
+[data-mode="demo"] .ecal-active-step {
+  display: block;
+}
+.ecal-camera-tools .ecal-stage-play {
+  display: none;
+  width: auto;
+  padding: 0 0.65rem;
+  font-size: 0.8125rem;
+}
+[data-mode="demo"] .ecal-stage-play {
+  display: grid;
+}
+.ecal-workbench:has(.ecal-noscript) [data-render-status] {
+  display: none;
+}
+.ecal-stage canvas:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -5px;
+}
+.ecal-stage-heading {
+  position: absolute;
+  inset: 1.25rem 1.4rem auto;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  pointer-events: none;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.ecal-stage-heading > span:first-child {
+  color: var(--foreground);
+  font-weight: 600;
+}
+.ecal-stage-slash {
+  padding: 0 0.5rem;
+  color: var(--border);
+}
+.ecal-fallback {
+  position: absolute;
+  inset: 3rem 1rem 6.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.ecal-fallback svg {
+  width: 100%;
+  max-width: 450px;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+[data-ecal-viewer][data-state="ready"] .ecal-fallback {
+  display: none;
+}
+[data-ecal-viewer][data-state="ready"] canvas {
+  opacity: 1;
+}
+.ecal-model-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  display: none;
+}
+[data-ecal-viewer][data-state="ready"] .ecal-model-labels {
+  display: block;
+}
+.ecal-model-labels span {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: var(--foreground);
+  background: var(--node-surface);
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.ecal-stage-status {
+  flex: none;
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+[data-state="ready"] .ecal-stage-status {
+  display: none;
+}
+.ecal-noscript {
+  margin-top: 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+.ecal-camera-tools {
+  position: absolute;
+  bottom: 2.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  width: max-content;
+  max-width: calc(100% - 1.5rem);
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 3px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  gap: 2px;
+}
+.ecal-workbench button {
+  min-height: 44px;
+  border-radius: 5px;
+  transition:
+    background-color 150ms,
+    color 150ms;
+}
+.ecal-workbench button:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+.ecal-workbench button:not(:disabled):hover {
+  background: var(--muted);
+}
+.ecal-workbench button:focus-visible,
+.ecal-workbench input:focus-visible,
+.ecal-workbench summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.ecal-camera-tools button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  color: var(--foreground);
+}
+.ecal-camera-tools .ecal-reset {
+  width: auto;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}
+.ecal-camera-tools svg,
+.ecal-part-list svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ecal-tool-divider {
+  height: 18px;
+  width: 1px;
+  background: var(--border);
+  margin: 0 3px;
+}
+.ecal-gesture-hint {
+  position: absolute;
+  bottom: 0.7rem;
+  left: 0.5rem;
+  right: 0.5rem;
+  text-align: center;
+  pointer-events: none;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+}
+.ecal-inspector {
+  min-width: 0;
+  padding: 1.25rem;
+  border-left: 1px solid var(--border);
+}
+.ecal-mode-switch {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.ecal-mode-switch button {
+  padding: 0 0 0.65rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  border-radius: 0;
+  position: relative;
+}
+.ecal-mode-switch button[aria-pressed="true"] {
+  color: var(--foreground);
+  font-weight: 600;
+}
+.ecal-mode-switch button[aria-pressed="true"]::after {
+  content: "";
+  height: 2px;
+  background: var(--accent);
+  position: absolute;
+  bottom: -1px;
+  inset-inline: 0;
+}
+.ecal-mode-switch button:not(:disabled):hover {
+  background: transparent;
+  color: var(--foreground);
+}
+.ecal-explode-control {
+  margin-bottom: 1rem;
+}
+.ecal-explode-control label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+}
+.ecal-explode-control output {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.ecal-explode-control input {
+  display: block;
+  width: 100%;
+  height: 30px;
+  accent-color: var(--accent);
+  cursor: ew-resize;
+}
+.ecal-range-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+}
+.ecal-part-list {
+  display: grid;
+  gap: 2px;
+}
+.ecal-part-list button {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.4rem 0.55rem;
+  text-align: left;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.ecal-part-list button[aria-pressed="true"] {
+  color: var(--foreground);
+  background: var(--muted);
+}
+.ecal-part-list svg {
+  margin-left: auto;
+  width: 14px;
+  height: 14px;
+}
+.ecal-swatch {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  background: var(--swatch);
+}
+.ecal-crystal-picker {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.ecal-crystal-picker summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.ecal-crystal-picker summary span {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+.ecal-crystal-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 3px;
+  margin-top: 0.75rem;
+}
+.ecal-crystal-grid button {
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--border);
+}
+.ecal-crystal-grid button[aria-pressed="true"] {
+  color: var(--accent-foreground);
+  background: var(--accent);
+}
+.ecal-part-detail {
+  padding-top: 1.1rem;
+}
+.ecal-part-detail h2,
+.ecal-demo-copy h2 {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  margin-bottom: 0.6rem;
+}
+.ecal-part-detail p,
+.ecal-demo-copy p {
+  font-size: 0.8125rem;
+  line-height: 1.85;
+}
+.ecal-detail-note {
+  color: var(--muted-foreground);
+  margin-top: 0.65rem;
+  font-size: 0.75rem !important;
+}
+.ecal-demo-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  padding: 0;
+  margin: 0 0 1.6rem;
+  list-style: none;
+}
+.ecal-demo-steps button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  padding: 0.35rem 0.4rem;
+  text-align: left;
+}
+.ecal-demo-steps button span {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.6875rem;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+}
+.ecal-demo-steps button[aria-current="step"] {
+  color: var(--foreground);
+  background: var(--muted);
+}
+.ecal-demo-steps button[aria-current="step"] span {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ecal-demo-copy {
+  min-height: 225px;
+}
+.ecal-playback {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+.ecal-playback button {
+  flex: 1;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.ecal-playback .ecal-play {
+  flex: 1.4;
+  background: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+.ecal-playback .ecal-play:not(:disabled):hover {
+  background: var(--foreground);
+  opacity: 0.85;
+}
+.ecal-restart {
+  display: block;
+  margin: 0.25rem auto 0;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  padding: 0 0.6rem;
+}
+.ecal-demo-note {
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+  margin-top: 0.65rem;
+  line-height: 1.8;
+}
+.ecal-model-caption {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-top: 0.8rem;
+}
+.ecal-reading,
+.ecal-reference {
+  margin-top: 4.25rem;
+}
+.ecal-section-intro {
+  max-width: 39rem;
+  margin-bottom: 1.7rem;
+}
+.ecal-section-intro h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.6rem;
+}
+.ecal-section-intro p {
+  color: var(--muted-foreground);
+  font-size: 0.9375rem;
+}
+.ecal-signal-chain {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+.ecal-signal-chain li {
+  border-top: 1px solid var(--border);
+  padding-top: 0.8rem;
+}
+.ecal-chain-index {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.ecal-signal-chain h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  margin: 0.55rem 0;
+}
+.ecal-signal-chain p {
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  line-height: 1.9;
+}
+.ecal-reference-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: 2rem;
+  align-items: start;
+}
+.ecal-reference-image {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 0.75rem;
+}
+.ecal-reference-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ecal-reference-assembly img {
+  max-height: 560px;
+  object-fit: contain;
+}
+.ecal-reference-grid figcaption {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-top: 0.7rem;
+  line-height: 1.8;
+}
+.ecal-reference-text {
+  margin-top: 2rem;
+}
+.ecal-reference-text h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.7rem;
+}
+.ecal-reference-text p {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-top: 0.6rem;
+  line-height: 1.9;
+}
+.ecal-static-parts {
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  font-size: 0.875rem;
+}
+.ecal-static-parts summary {
+  cursor: pointer;
+}
+.ecal-static-parts dt {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+.ecal-static-parts dd {
+  color: var(--muted-foreground);
+  max-width: 70ch;
+  margin-top: 0.25rem;
+}
+[data-demo-panel][hidden],
+[data-structure-panel][hidden] {
+  display: none;
+}
+@media (min-width: 768px) {
+  .ecal-workbench:has(.ecal-crystal-picker[open]) .ecal-stage {
+    min-height: 710px;
+  }
+}
+@media (max-width: 900px) {
+  .ecal-workbench {
+    grid-template-columns: minmax(0, 1fr) 17.5rem;
+  }
+  .ecal-inspector {
+    padding: 1rem;
+  }
+  .ecal-stage-heading {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+}
+@media (max-width: 767px) {
+  .ecal-page-heading {
+    margin: 1.15rem 0 1.25rem;
+    align-items: start;
+  }
+  .ecal-page-heading p {
+    font-size: 0.875rem;
+  }
+  .ecal-related {
+    font-size: 0.75rem;
+    margin-top: 0.35rem;
+  }
+  .ecal-workbench {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ecal-stage {
+    height: 390px;
+    min-height: 390px;
+  }
+  .ecal-stage-heading {
+    flex-direction: row;
+    inset: 1rem;
+    font-size: 0.6875rem;
+  }
+  .ecal-stage-heading > span:last-child {
+    max-width: 125px;
+    text-align: right;
+  }
+  .ecal-inspector {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding: 1rem 1.1rem 1.25rem;
+  }
+  .ecal-mode-switch {
+    margin-bottom: 1rem;
+  }
+  .ecal-part-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+  .ecal-part-list button {
+    padding: 0.4rem 0.5rem;
+  }
+  .ecal-part-detail p,
+  .ecal-demo-copy p {
+    font-size: 0.875rem;
+  }
+  .ecal-part-detail h2,
+  .ecal-demo-copy h2 {
+    font-size: 1rem;
+  }
+  .ecal-demo-copy {
+    min-height: 0;
+  }
+  .ecal-demo-steps {
+    margin-bottom: 1.15rem;
+  }
+  .ecal-model-caption {
+    font-size: 0.6875rem;
+    line-height: 1.85;
+  }
+  .ecal-reading,
+  .ecal-reference {
+    margin-top: 3rem;
+  }
+  .ecal-section-intro h2 {
+    font-size: 1.3rem;
+  }
+  .ecal-section-intro p {
+    font-size: 0.875rem;
+  }
+  .ecal-signal-chain {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 1.1rem;
+  }
+  .ecal-reference-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.75rem;
+  }
+  .ecal-reference-assembly img {
+    max-height: 480px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ecal-workbench button {
+    transition: none;
+  }
+}
