@@ -26,13 +26,14 @@ const sortedPosts = getSortedPosts(posts);
 const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
 const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
 const homePath = getRelativeLocaleUrl(locale, "");
+const titleLines = ["Measurement", "& Thought"];
 ---
 
 <Layout>
   <link
     slot="head"
     rel="preload"
-    href={getAssetPath("fonts/ObservatoryTitle.woff2")}
+    href={getAssetPath("fonts/Allura-Regular.woff2")}
     as="font"
     type="font/woff2"
     crossorigin
@@ -47,31 +48,40 @@ const homePath = getRelativeLocaleUrl(locale, "");
     <section id="hero" class="home-hero">
       <HeroParticles />
       <div class="hero-copy">
-        <h1 class="hero-title" data-hero-title data-state="waiting">
-          <span class="hero-title-line">
-            <span class="hero-title-main">测量宇宙</span>
-            <span class="hero-title-trail" aria-hidden="true">测量宇宙</span>
-            <span
-              class="hero-title-trail hero-title-trail--two"
-              aria-hidden="true">测量宇宙</span
-            >
-            <span
-              class="hero-title-trail hero-title-trail--three"
-              aria-hidden="true">测量宇宙</span
-            >
-          </span>
-          <span class="hero-title-line hero-title-line--accent">
-            <span class="hero-title-main">思考世界</span>
-            <span class="hero-title-trail" aria-hidden="true">思考世界</span>
-            <span
-              class="hero-title-trail hero-title-trail--two"
-              aria-hidden="true">思考世界</span
-            >
-            <span
-              class="hero-title-trail hero-title-trail--three"
-              aria-hidden="true">思考世界</span
-            >
-          </span>
+        <h1
+          class="hero-title"
+          lang="en"
+          aria-label={titleLines.join(" ")}
+          data-hero-title
+          data-state="waiting"
+        >
+          {
+            titleLines.map((line, index) => (
+              <span
+                class:list={[
+                  "hero-title-line",
+                  { "hero-title-line--accent": index === 1 },
+                ]}
+              >
+                <span class="hero-title-main">{line}</span>
+                <span class="hero-title-trail" aria-hidden="true">
+                  {line}
+                </span>
+                <span
+                  class="hero-title-trail hero-title-trail--two"
+                  aria-hidden="true"
+                >
+                  {line}
+                </span>
+                <span
+                  class="hero-title-trail hero-title-trail--three"
+                  aria-hidden="true"
+                >
+                  {line}
+                </span>
+              </span>
+            ))
+          }
         </h1>
         <p class="hero-description">
           我来自USTC，粒子物理与原子核物理专业，目前正在撰写毕业论文。
@@ -193,7 +203,7 @@ const homePath = getRelativeLocaleUrl(locale, "");
       fontTimer = window.setTimeout(resolve, 300);
     });
     const fontReady = document.fonts
-      .load('400 1em "Observatory Title"', "测量宇宙思考世界")
+      .load('400 1em "Allura"', title.getAttribute("aria-label") ?? "")
       .catch(() => undefined);
 
     Promise.race([fontReady, maxFontWait]).then(() => {

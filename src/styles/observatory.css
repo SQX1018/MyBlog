@@ -167,6 +167,7 @@
   .hero-copy {
     position: relative;
     z-index: 2;
+    min-width: 0;
   }
 
   .hero-title {
@@ -178,12 +179,14 @@
     );
     margin: 0;
     overflow: clip;
-    padding-inline-end: var(--hero-title-gutter);
-    font-family: "Observatory Title", var(--font-app);
-    font-size: clamp(3.5rem, 6vw, 4.75rem);
+    padding-block: 0.12em 0.16em;
+    padding-inline: 0.06em calc(var(--hero-title-gutter) + 0.12em);
+    font-family: "Allura", "Allura Fallback", "URW Chancery L", cursive;
+    font-size: clamp(2.5rem, 5.6vw, 4.75rem);
     font-weight: 400;
-    letter-spacing: 0.06em;
-    line-height: 1.18;
+    font-synthesis: none;
+    letter-spacing: normal;
+    line-height: 1.12;
   }
 
   .hero-title-line {
@@ -220,7 +223,7 @@
     position: absolute;
     z-index: 1;
     inset: 0;
-    opacity: var(--trail-opacity);
+    opacity: 0;
     filter: blur(0.65px);
     transform: translate3d(var(--trail-offset), 0, 0);
     pointer-events: none;
@@ -281,8 +284,8 @@
       opacity: var(--trail-opacity);
     }
     100% {
-      opacity: var(--trail-opacity);
-      transform: translate3d(var(--trail-offset), 0, 0);
+      opacity: 0;
+      transform: translate3d(0, 0, 0);
     }
   }
 
@@ -838,8 +841,8 @@
     --hero-enter-x: 64px;
     --hero-line-offset: 12px;
     --hero-trail-step: 4px;
-    font-size: 2.5rem;
-    line-height: 1.18;
+    font-size: clamp(2.5rem, 12vw, 3rem);
+    line-height: 1.14;
   }
 
   .hero-actions {
