@@ -38,7 +38,9 @@ try {
     }
   }
 
-  console.log(`Search index generated for ${indexed.page_count} pages (${generated.files.length} files).`);
+  process.stdout.write(
+    `Search index generated for ${indexed.page_count} pages (${generated.files.length} files).\n`
+  );
 } finally {
   await pagefind.close();
 }
